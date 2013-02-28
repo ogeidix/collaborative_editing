@@ -12,25 +12,7 @@ $(document).ready(function(){
     $('#error').show();
   }
 
-  $('#fakeform').submit(function(event) {
-      event.preventDefault();
-      //var node = $(this).find(':input');
-      var types = ['node', 'y', 'version', 'changes' ];
-      var nodes = {};
-      for ( type in types){
-          //nodes.push( $('input[name=' + types[type] + ']',this));
-          nodes[types[type]] = $('input[name=' + types[type] + ']',this);
-      }
-      var values = { "action":"change"};
-      for ( type in nodes){
-          values[type] = nodes[type].val();
-      }
-      //ws.send($.toJSON({ action: 'message', message: msg }));
-      var json = JSON.stringify(values);
-      alert("submit! " + json);
-  });
 
- 
   // join on enter
   $('#ask input').keydown(function(event) {
     if (event.keyCode == 13) {
@@ -99,6 +81,25 @@ $(document).ready(function(){
     ws.onopen = function() {
       ws.send($.toJSON({ action: 'join', user: name }));
     }
+
+    $('#fakeform').submit(function(event) {
+      event.preventDefault();
+      //var node = $(this).find(':input');
+      var types = ['node', 'y', 'version', 'changes' ];
+      var nodes = {};
+      for ( type in types){
+          //nodes.push( $('input[name=' + types[type] + ']',this));
+          nodes[types[type]] = $('input[name=' + types[type] + ']',this);
+      }
+      var values = { "action":"change"};
+      for ( type in nodes){
+          values[type] = nodes[type].val();
+      }
+      var json = JSON.stringify(values);
+      ws.send(json);
+    });
+
+ 
   }
 
 

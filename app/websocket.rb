@@ -25,7 +25,7 @@ module CollaborativeEditing
         when 'move'
           # ...
         when 'change'
-          # ...
+          publish :action => 'control', :user => @user, :message => 'change the file at pos: ( ' + msg[:node] + ',' + msg[:y] + '), @' + msg[:version] + ':' + msg[:changes];
       end
     end
     
