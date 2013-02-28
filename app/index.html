@@ -99,7 +99,24 @@ $(document).ready(function(){
       ws.send(json);
     });
 
- 
+     $('#fakerelocate form').submit(function(event) {
+      event.preventDefault();
+      //var node = $(this).find(':input');
+      var types = ['node', 'y', 'version'];
+      var nodes = {};
+      for ( type in types){
+          //nodes.push( $('input[name=' + types[type] + ']',this));
+          nodes[types[type]] = $('input[name=' + types[type] + ']',this);
+      }
+      var values = { "action":"relocate"};
+      for ( type in nodes){
+          values[type] = nodes[type].val();
+      }
+      var json = JSON.stringify(values);
+      ws.send(json);
+    });
+
+
   }
 
 
@@ -352,13 +369,21 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         <form><input type="text" id="message" /></form>
       </div>
     </div>
-      <div id="fakechange"> 
+      <div id="fakechange" style="float:left; width 200px "> 
           <form id="fakeform">
               Node:<input type="text" id="node" name="node"> <br>
               PosY:<input type="text" id="y" name="y"><br>
               Version:<input type="text" id="version" name="version"> <br>
               Changes:<input type="text" id="changes" name="changes"><br>
-              <input type="submit" value="Submit">
+              <input type="submit" value="Submit Changes">
+          </form>
+      </div>
+      <div id="fakerelocate" style="float:left; width 200px "> 
+          <form>
+              Node:<input type="text" id="node" name="node"> <br>
+              PosY:<input type="text" id="y" name="y"><br>
+              Version:<input type="text" id="version" name="version"> <br>
+              <input type="submit" value="Submit Relocate">
           </form>
       </div>
   </div>

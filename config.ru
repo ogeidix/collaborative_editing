@@ -5,7 +5,7 @@ CollaborativeEditing::Application.initialize!
 if CollaborativeEditing::Application.env == 'development'
   use AsyncRack::CommonLogger
   # Enable code reloading on every request
-  use Rack::Reloader, 0
+  # use Rack::Reloader, 0
 end
 
 run CollaborativeEditing::Application.routes
