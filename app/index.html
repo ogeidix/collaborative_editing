@@ -4,13 +4,33 @@
 <script src='http://jquery-json.googlecode.com/files/jquery.json-2.2.min.js'></script>
 <script src='http://datejs.googlecode.com/svn/trunk/build/date.js'></script>
 <script>
+
 $(document).ready(function(){
   if (typeof(WebSocket) != 'undefined' || typeof(MozWebSocket)) {
     $('#ask').show();
   } else {
     $('#error').show();
   }
-  
+
+  $('#fakeform').submit(function(event) {
+      event.preventDefault();
+      //var node = $(this).find(':input');
+      var types = ['node', 'y', 'version', 'changes' ];
+      var nodes = {};
+      for ( type in types){
+          //nodes.push( $('input[name=' + types[type] + ']',this));
+          nodes[types[type]] = $('input[name=' + types[type] + ']',this);
+      }
+      var values = { "action":"change"};
+      for ( type in nodes){
+          values[type] = nodes[type].val();
+      }
+      //ws.send($.toJSON({ action: 'message', message: msg }));
+      var json = JSON.stringify(values);
+      alert("submit! " + json);
+  });
+
+ 
   // join on enter
   $('#ask input').keydown(function(event) {
     if (event.keyCode == 13) {
@@ -30,7 +50,7 @@ $(document).ready(function(){
     var host = window.location.host.split(':')[0];
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-    var ws = new SocketKlass('ws://127.0.0.1:3000/websocket/readme');
+    var ws = new SocketKlass('ws://tomato.ics.uci.edu:3000/websocket/readme');
 
     var container = $('div#msgs');
     ws.onmessage = function(evt) {
@@ -331,6 +351,15 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         <form><input type="text" id="message" /></form>
       </div>
     </div>
+      <div id="fakechange"> 
+          <form id="fakeform">
+              Node:<input type="text" id="node" name="node"> <br>
+              PosY:<input type="text" id="y" name="y"><br>
+              Version:<input type="text" id="version" name="version"> <br>
+              Changes:<input type="text" id="changes" name="changes"><br>
+              <input type="submit" value="Submit">
+          </form>
+      </div>
   </div>
 </body>
 </html>
