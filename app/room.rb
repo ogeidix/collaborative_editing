@@ -9,6 +9,7 @@ module CollaborativeEditing
 		def initialize(document)
 			@document  = Document.new(document)
 			@clients = []
+			@changes = []
 		end
 
 		def broadcast(message)
@@ -19,7 +20,7 @@ module CollaborativeEditing
 			@clients << client 
 		end
 
-        def request_change( change)
+        def request_change(change)
             # FOR NOW DO NOT TRANSLATE position in current version
             # if check position is == to client position
             # 
@@ -32,10 +33,12 @@ module CollaborativeEditing
 
             # - prepare change -> merge inside document
             # - commit change
+			# - add the change to @changes so that the version translation code 
+			# 		can use it
             return true
         end
 
-        def request_relocate( username, position)
+        def request_relocate(username, position)
             return false if (@document.version != position.version)
             @clients.each { |client| 
              return false if (client.position == position && client.username != username)

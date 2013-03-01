@@ -4,11 +4,11 @@ module CollaborativeEditing
     before_start :join_room
     on_finish    :leave_room
     on_data      :received_data
-
     attr_reader :position, :username
 
     def join_room
-      @room = Room.for(params[:document])
+	  @filename = params[:document]
+      @room = Room.for(@filename)
       @room.subscribe self
     end
     
@@ -17,6 +17,7 @@ module CollaborativeEditing
     end
 
     def send_to_browser(message)
+		message = encode_json(message) if message.class != String
         render message
     end
 
@@ -25,13 +26,14 @@ module CollaborativeEditing
       case msg[:action]
         when 'join'
           @username = msg[:user]
-          broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
+          content = File.read("data/"+@filename)
+		  # currently it will broadcast file to all particiapnts every time a new guy is added
+		  # this must be changed to send the file only to the new guy
+		  broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
+          send_to_browser :action => 'loadfile', :content => content
         when 'message'
           broadcast msg.merge(:user => @username)
-        when 'move'
-          # ...
         when 'change'
-
           broadcast :action => 'control', :user => @username, :message => 'request change pos: ( ' + msg[:node] + ',' + msg[:y] + '), @' + msg[:version] + ':' + msg[:changes];
           
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
@@ -63,6 +65,7 @@ module CollaborativeEditing
       end
       
       def parse_json(str)
+	    str.gsub!("'","\\\\'")
         Yajl::Parser.parse(str, :symbolize_keys => true)
       end
   end

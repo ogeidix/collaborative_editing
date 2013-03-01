@@ -10,13 +10,16 @@ module CollaborativeEditing
         end
 
         def conflict?(position)
-            return false if @position.node ! position.node
+            return true if @position == position
+			# IF the versions dont match, then we need to bring them to the same version 
+			# and then compare them
+
             # if change is APPEND
             #    return false
             # if change is DELETE
             #    y = change,position.y- change.size 
             #    ....
-            return true
+            return false
         end
     end
 end

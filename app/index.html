@@ -26,13 +26,14 @@ $(document).ready(function(){
     $('#ask').hide();
     $('#application').show();
     $('input#message').focus();
+	
   });
 
   function join(name) {
     var host = window.location.host.split(':')[0];
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-    var ws = new SocketKlass('ws://tomato.ics.uci.edu:3000/websocket/readme');
+    var ws = new SocketKlass('ws://tomato.ics.uci.edu:3000/websocket/'+$('#filename').val());
 
     var container = $('div#msgs');
     ws.onmessage = function(evt) {
@@ -41,32 +42,34 @@ $(document).ready(function(){
 
       var action = obj['action'];
       var struct = container.find('li.' + action + ':first');
-      if (struct.length < 1) {
-        console.log("Could not handle: " + evt.data);
-        return;
-      }
-      
-      var msg = struct.clone();
-      msg.find('.time').text((new Date()).toString("HH:mm:ss"));
 
       if (action == 'message') {
-        var matches;
-        if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
+		var msg = struct.clone();
+		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
+		var matches;
+		if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
           msg.find('.user').text(obj['user'] + ' ' + matches[1]);
           msg.find('.user').css('font-weight', 'bold');
         } else {
           msg.find('.user').text(obj['user']);
           msg.find('.message').text(': ' + obj['message']);
         }
+        if (obj['user'] == name) msg.find('.user').addClass('self');
+        container.find('ul').append(msg.show());
+        container.scrollTop(container.find('ul').innerHeight());
       } else if (action == 'control') {
+		var msg = struct.clone();
+		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
         msg.find('.user').text(obj['user']);
         msg.find('.message').text(obj['message']);
         msg.addClass('control');
+		if (obj['user'] == name) msg.find('.user').addClass('self');
+		container.find('ul').append(msg.show());
+		container.scrollTop(container.find('ul').innerHeight());
+	  } else if (action == 'loadfile') {
+		$('#editor').html(obj['content']);
       }
-      
-      if (obj['user'] == name) msg.find('.user').addClass('self');
-      container.find('ul').append(msg.show());
-      container.scrollTop(container.find('ul').innerHeight());
+
     }
     
     $('#channel form').submit(function(event) {
@@ -115,10 +118,7 @@ $(document).ready(function(){
       var json = JSON.stringify(values);
       ws.send(json);
     });
-
-
   }
-
 
   function getCaretPosition(editableDiv) {
       var caretPos = 0, containerEl = null, sel, range;
@@ -325,30 +325,11 @@ span.ins_str {
   <div id="ask" class="bordered" style="display: none;">
     <a href="#"><span class="join">Join!</span></a>
     <label>Name:</label> <input type="text" id="name" /> <br />
-    <label>File:</label> <input type="text" id="name" />
+    <label>File:</label> <input type="text" id="filename" />
   </div>
   <div id="application"  style="display: none;">
       <div id="editor" class="bordered-clean" contenteditable="true">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-<br /><br />
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-<br /><br />
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Welcome to UCI collaborative document editing project. Start typing !!
       </div>
     <div id="mycursor"></div>
 
