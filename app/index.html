@@ -21,11 +21,14 @@ $(document).ready(function(){
   
   // join on click
   $('#ask a').click(function() {
-    join($('#ask input').val());
-    $('#ask').hide();
-    $('#application').show();
-    $('input#message').focus();
-	
+    if ($('#name').val() == "" || $('#filename').val() == "") {
+        window.alert("Please enter the username and filename !!");
+    } else {
+        join($('#ask input').val());
+        $('#ask').hide();
+        $('#application').show();
+        $('input#message').focus();
+    }
   });
 
   function join(name) {

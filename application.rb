@@ -3,6 +3,7 @@ require 'bundler'
 require 'yajl'
 require 'erb'
 require 'stringio'
+require 'fileutils'
 
 module CollaborativeEditing
   class Application

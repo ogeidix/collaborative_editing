@@ -27,11 +27,19 @@ module CollaborativeEditing
         when 'join'
           # send the file to the new participant.
           @username = msg[:user]
+
           # Broadcast a message to all participants indicating the new member
           broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
+
           # server maintains all files under $COLLAB_EDITOR_HOME/data/
+          # if file exists, then send its contents, else create a new file with default content
+          if !File.file?("data/" + @filename)
+              # replicate the default file
+              FileUtils.cp("app/default.file", "data/" + @filename) 
+          end
           content = File.read("data/" + @filename) 
-          # send the file to the new participant
+
+          # send the file contents to the new participant
           send_to_browser :action => 'loadfile', :content => content
 
         when 'message'
