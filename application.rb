@@ -19,7 +19,7 @@ module CollaborativeEditing
     def self.routes
       @routes ||=  HttpRouter.new do
         add('/').static(Application.root('app/index.html'))
-        get('/websocket/:document').to(Websocket)
+        get('/client/:document').to(Client)
       end
     end
 
