@@ -2,6 +2,7 @@ module CollaborativeEditing
 	class Room
 		@@rooms = {}
 
+		attr_reader :document
 		def self.for(document)
 			@@rooms[document] ||= Room.new(document)
 		end
@@ -21,7 +22,7 @@ module CollaborativeEditing
 		end
 
         def request_change(change)
-            # FOR NOW DO NOT TRANSLATE position in current version
+			# FOR NOW DO NOT TRANSLATE position in current version
             # if check position is == to client position
             # 
             # ALGORITHM:
@@ -30,7 +31,7 @@ module CollaborativeEditing
                 next if client.username == change.username
                 return false if change.conflict? client.position
             }
-
+			@document.execute_change change
             # - prepare change -> merge inside document
             # - commit change
 			# - add the change to @changes so that the version translation code 

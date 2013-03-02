@@ -4,6 +4,7 @@ require 'yajl'
 require 'erb'
 require 'stringio'
 require 'fileutils'
+require 'rexml/document'
 
 module CollaborativeEditing
   class Application

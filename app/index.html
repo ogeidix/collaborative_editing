@@ -10,13 +10,13 @@ var documentVersion = 3;
 
 function generateXPath(element) {
     if (element.id=='usergenerated' )
-        return 'id("'+element.id+'")';
+        return '/';
     var ix= 0;
     var siblings= element.parentNode.childNodes;
     for (var i= 0; i<siblings.length; i++) {
         var sibling = siblings[i];
         if (sibling===element){
-            return generateXPath(element.parentNode)+'/'+ (element.tagName || "text")+'['+(ix+1)+']';
+            return generateXPath(element.parentNode)+'/'+ (element.tagName || "text").toLowerCase() +'['+(ix+1)+']';
         }
         if ((sibling.nodeType===1 || sibling.nodeType===3) && sibling.tagName===element.tagName){
             ix++;
