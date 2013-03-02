@@ -6,6 +6,25 @@
 <script src='/js/rangy-core.js'></script>
 <script>
 
+var documentVersion = 3;
+
+function generateXPath(element) {
+    if (element.id=='usergenerated' )
+        return 'id("'+element.id+'")';
+    var ix= 0;
+    var siblings= element.parentNode.childNodes;
+    for (var i= 0; i<siblings.length; i++) {
+        var sibling = siblings[i];
+        if (sibling===element){
+            return generateXPath(element.parentNode)+'/'+ (element.tagName || "text")+'['+(ix+1)+']';
+        }
+        if ((sibling.nodeType===1 || sibling.nodeType===3) && sibling.tagName===element.tagName){
+            ix++;
+        }
+    }
+}
+
+
 $(document).ready(function(){
   if (typeof(WebSocket) != 'undefined' || typeof(MozWebSocket)) {
     $('#ask').show();
@@ -121,11 +140,17 @@ $(document).ready(function(){
       var json = JSON.stringify(values);
       ws.send(json);
     });
-  }
 
   $('#editor').bind('click', function() {
-      console.log(rangy.getSelection());
+      selection = rangy.getSelection();
+      node = generateXPath(selection.anchorNode);
+      offset = selection.anchorOffset;
+      console.log("Click In: " + node + ", " + offset + " @ v"+documentVersion);
+      var json = JSON.stringify({"action":"relocate", "node": node, "y": offset, "version": documentVersion});
+      ws.send(json);
   }); 
+
+  }
 
 });
 </script>
@@ -241,14 +266,6 @@ $(document).ready(function(){
     width: 300px;
   }
 
-  div#mycursor {
-    display: block;
-    width: 5px;
-    height: 18px;
-    background: red;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 span.ins_str {
 /*position: relative;
@@ -268,10 +285,8 @@ span.ins_str {
   </div>
   <div id="application"  style="display: none;">
       <div id="editor" class="bordered-clean" contenteditable="true">
-        Welcome to UCI collaborative document editing project. Start typing !!
+        waiting for content...
       </div>
-    <div id="mycursor"></div>
-
     <div id="channel" class="bordered-clean">
       <div id="msgs">
         <ul>

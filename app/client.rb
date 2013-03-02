@@ -45,7 +45,7 @@ module CollaborativeEditing
         when 'message'
           broadcast msg.merge(:user => @username)
         when 'change'
-          broadcast :action => 'control', :user => @username, :message => 'request change pos: ( ' + msg[:node] + ',' + msg[:y] + '), @' + msg[:version] + ':' + msg[:changes];
+          broadcast :action => 'control', :user => @username, :message => 'request change pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s + ':' + msg[:changes];
           
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           change = Change.new(@username, position, msg[:changes])
@@ -55,7 +55,7 @@ module CollaborativeEditing
             broadcast :action => 'control', :user => @username, :message => 'request change denied'
           end
         when 'relocate'
-          broadcast :action => 'control', :user => @username, :message => 'request relocate pos: ( ' + msg[:node] + ',' + msg[:y] + '), @' + msg[:version];
+          broadcast :action => 'control', :user => @username, :message => 'request relocate pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s;
           new_position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           if (@room.request_relocate @username, new_position)
             @position = new_position  
