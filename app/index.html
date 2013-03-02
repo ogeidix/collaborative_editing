@@ -3,6 +3,7 @@
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
 <script src='http://jquery-json.googlecode.com/files/jquery.json-2.2.min.js'></script>
 <script src='http://datejs.googlecode.com/svn/trunk/build/date.js'></script>
+<script src='/js/rangy-core.js'></script>
 <script>
 
 $(document).ready(function(){
@@ -122,74 +123,10 @@ $(document).ready(function(){
     });
   }
 
-  function getCaretPosition(editableDiv) {
-      var caretPos = 0, containerEl = null, sel, range;
-      if (window.getSelection) {
-          sel = window.getSelection();
-          if (sel.rangeCount) {
-              range = sel.getRangeAt(0);
-              if (range.commonAncestorContainer.parentNode == editableDiv) {
-                  caretPos = range.endOffset;
-              }
-          }
-      } else if (document.selection && document.selection.createRange) {
-          range = document.selection.createRange();
-          if (range.parentElement() == editableDiv) {
-              var tempEl = document.createElement("span");
-              editableDiv.insertBefore(tempEl, editableDiv.firstChild);
-              var tempRange = range.duplicate();
-              tempRange.moveToElementText(tempEl);
-              tempRange.setEndPoint("EndToEnd", range);
-              caretPos = tempRange.text.length;
-          }
-      }
-      return caretPos;
-  }
-
-  $('#editor').bind('keyup click', function() {
-
-    var offset = getCaretPosition(this),
-        $org = $(this),
-        $el = $org.clone(),
-        char = $el.text().substr(offset-1, 1);
-    
-    console.log(offset, char);
-
-      var html = '<span class="ins_str">' + char + '</span>';
-      $el.html($el.text().substr(0, offset - 1) + html + $el.text().substr(offset));
-  
-      var x = $org.offset().left,
-          y = $org.offset().top,
-          width = $org.outerWidth() - 22,
-          height = $org.outerHeight() - 22;
-  
-      $el.css({
-          'position': 'absolute',
-          'top': y,
-          'left': x,
-          'width': width,
-          'height': height,
-          'opacity': 0
-      });
-      $org.before($el);
-  
-      var $span = $el.find('span.ins_str');
-      if ($span.length > 0)
-      {
-          var offset = $span.offset(),
-              char_x = offset.left - $(this).scrollLeft(),
-              char_y = offset.top - $(this).scrollTop();
-  
-          $('div#cursor').css({
-              'left': char_x,
-              'top': char_y
-          });
-      }
-      
-      console.log($span.offset(), $span.position());
-  
-      $el.remove();   
+  $('#editor').bind('click', function() {
+      console.log(rangy.getSelection());
   }); 
+
 });
 </script>
 <style type="text/css" media="screen">

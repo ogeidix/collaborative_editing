@@ -21,6 +21,7 @@ module CollaborativeEditing
       @routes ||=  HttpRouter.new do
         add('/').static(Application.root('app/index.html'))
         get('/client/:document').to(Client)
+        add('/js/rangy-core.js').static(Application.root('app/js/rangy-core.js'))
       end
     end
 
