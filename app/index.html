@@ -145,6 +145,10 @@ $(document).ready(function(){
       selection = rangy.getSelection();
       node = generateXPath(selection.anchorNode);
       offset = selection.anchorOffset;
+      $('#change_node').val(node);
+      $('#relocate_node').val(node);
+      $('#change_y').val(offset);
+      $('#relocate_y').val(offset);
       console.log("Click In: " + node + ", " + offset + " @ v"+documentVersion);
       var json = JSON.stringify({"action":"relocate", "node": node, "y": offset, "version": documentVersion});
       ws.send(json);
@@ -306,18 +310,18 @@ span.ins_str {
     </div>
       <div id="fakechange" style="float:left; width 200px "> 
           <form id="fakeform">
-              Node:<input type="text" id="node" name="node"> <br>
-              PosY:<input type="text" id="y" name="y"><br>
-              Version:<input type="text" id="version" name="version"> <br>
+              Node:<input type="text" id="change_node" name="node"> <br>
+              PosY:<input type="text" id="change_y" name="y"><br>
+              Version:<input type="text" id="version" name="version" value="3"> <br>
               Changes:<input type="text" id="changes" name="changes"><br>
               <input type="submit" value="Submit Changes">
           </form>
       </div>
       <div id="fakerelocate" style="float:left; width 200px "> 
           <form>
-              Node:<input type="text" id="node" name="node"> <br>
-              PosY:<input type="text" id="y" name="y"><br>
-              Version:<input type="text" id="version" name="version"> <br>
+              Node:<input type="text" id="relocate_node" name="node"> <br>
+              PosY:<input type="text" id="relocate_y" name="y"><br>
+              Version:<input type="text" id="version" name="version" value="3"> <br>
               <input type="submit" value="Submit Relocate">
           </form>
       </div>
