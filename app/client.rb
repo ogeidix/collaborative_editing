@@ -30,7 +30,7 @@ module CollaborativeEditing
 
           # Broadcast a message to all participants indicating the new member
           broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
-          content = File.read("data/" + @filename) 
+          content = File.read("data/" + @filename + ".ver." + @room.document.version.to_s) 
 
           # send the file contents to the new participant
           send_to_browser :action => 'loadfile', :content => content
