@@ -30,7 +30,8 @@ module CollaborativeEditing
                 n += 1
             end
             current_node = parent_node.children[n-1]
-            puts "Current node before: " + current_node.value
+            current_node.value = current_node.value[0, change.position.y] + change.changes.to_s + current_node.value[change.position.y, current_node.value.length]
+            puts "Changed node : " + current_node.value
         end
     end
 end

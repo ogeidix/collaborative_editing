@@ -42,7 +42,7 @@ module CollaborativeEditing
           
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           change = Change.new(@username, position, msg[:changes])
-		  @room.request_change change
+
           if (@room.request_change change)
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
           else
