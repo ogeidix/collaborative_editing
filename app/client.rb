@@ -7,7 +7,7 @@ module CollaborativeEditing
     attr_reader :position, :username
 
     def join_room
-	  @filename = params[:document]
+      @filename = params[:document]
       @room = Room.for(@filename)
       @room.subscribe self
     end
@@ -17,7 +17,7 @@ module CollaborativeEditing
     end
 
     def send_to_browser(message)
-		message = encode_json(message) if message.class != String
+	message = encode_json(message) if message.class != String
         render message
     end
 
@@ -30,13 +30,6 @@ module CollaborativeEditing
 
           # Broadcast a message to all participants indicating the new member
           broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
-
-          # server maintains all files under $COLLAB_EDITOR_HOME/data/
-          # if file exists, then send its contents, else create a new file with default content
-          if !File.file?("data/" + @filename)
-              # replicate the default file
-              FileUtils.cp("app/default.file", "data/" + @filename) 
-          end
           content = File.read("data/" + @filename) 
 
           # send the file contents to the new participant

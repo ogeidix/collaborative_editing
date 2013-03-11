@@ -1,28 +1,28 @@
 module CollaborativeEditing
-	class Room
-		@@rooms = {}
+    class Room
+        @@rooms = {}
 
-		attr_reader :document
-		def self.for(document)
-			@@rooms[document] ||= Room.new(document)
-		end
+        attr_reader :document
+        def self.for(document)
+	        @@rooms[document] ||= Room.new(document)
+        end
 
-		def initialize(document)
-			@document  = Document.new(document)
-			@clients = []
-			@changes = []
-		end
+        def initialize(document)
+	        @document  = Document.new(document)
+	        @clients = []
+	        @changes = []
+        end
 
-		def broadcast(message)
-			@clients.each { |client| client.send_to_browser(message) }
-		end
+        def broadcast(message)
+	        @clients.each { |client| client.send_to_browser(message) }
+        end
 
-		def subscribe(client)
-			@clients << client 
-		end
+        def subscribe(client)
+	        @clients << client 
+        end
 
         def request_change(change)
-			# FOR NOW DO NOT TRANSLATE position in current version
+            # FOR NOW DO NOT TRANSLATE position in current version
             # if check position is == to client position
             # 
             # ALGORITHM:
@@ -31,11 +31,11 @@ module CollaborativeEditing
                 next if client.username == change.username
                 return false if change.conflict? client.position
             }
-			@document.execute_change change
+	    @document.execute_change change
             # - prepare change -> merge inside document
             # - commit change
-			# - add the change to @changes so that the version translation code 
-			# 		can use it
+            # - add the change to @changes so that the version translation code 
+	    # can use it
             return true
         end
 
@@ -46,5 +46,5 @@ module CollaborativeEditing
             }
             return true
         end
-	end
+    end
 end

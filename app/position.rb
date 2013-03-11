@@ -20,6 +20,5 @@ module CollaborativeEditing
 	def child_number
 	    @node.match( /text\[(\d+)?\]$/)[1]
 	end
-
     end
 end
