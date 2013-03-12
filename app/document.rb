@@ -19,7 +19,7 @@ module CollaborativeEditing
             end
             @rexml_doc = REXML::Document.new(File.new("data/" + name)) # + ".ver." + @version.to_s))          
         end
-	
+    
         def execute_change(this_change)
             puts "Parent: #{this_change.position.parent_node} - Child Num. #{this_change.position.child_number}"
             parent_node = REXML::XPath.first @rexml_doc, this_change.position.parent_node
@@ -33,7 +33,7 @@ module CollaborativeEditing
             current_node = parent_node.children[n-1]
             current_node.value = current_node.value[0, this_change.position.y] + this_change.change.to_s + current_node.value[this_change.position.y, current_node.value.length]
             puts "Changed node : " + current_node.value
-            print @rexml_doc
+            #print @rexml_doc
             @version += 1
             # File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
             puts "version changed to " + @version.to_s

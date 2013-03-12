@@ -34,7 +34,7 @@ module CollaborativeEditing
           content = @room.document.rexml_doc
 
           # send the file contents to the new participant
-          send_to_browser :action => 'loadfile', :content => content
+          send_to_browser :action => 'loadfile', :content => content, :version => @room.document.version
 
         when 'message'
           broadcast msg.merge(:user => @username)
@@ -48,7 +48,8 @@ module CollaborativeEditing
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
 
             # broadcast to client to merge
-            broadcast :action => 'change', :user => @username, :change => change.to_hash;
+            #broadcast :action => 'change', :user => @username, :change => change.to_hash;
+            broadcast :action => 'change', :user => @username, :node => msg[:node], :y => msg[:y], :version => @room.document.version, :changes => msg[:changes] 
           else
             broadcast :action => 'control', :user => @username, :message => 'request change denied'
           end
