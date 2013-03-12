@@ -24,6 +24,45 @@ function generateXPath(element) {
     }
 }
 
+function getelement(root, str_path){
+    //var root = document.getElementById("usergenerated");
+    if (str_path == null || str_path.length == 0){
+        return root;
+    }
+    var children = root.childNodes;
+    var iend=0;
+    var key="";
+    var offset=0;
+    while( str_path[iend] == '/'){
+        iend++;
+    }
+    while( iend < str_path.length && str_path[iend] != '/' && str_path[iend] != '['){
+        key += str_path[iend];
+        iend++;
+    }
+    // hope there is no exceptions on the format
+    offset = parseInt(str_path.substring(iend+1, str_path.indexOf(']',iend+1)));
+    var ix=1;
+    for( var i = 0; i < children.length; i++){
+        var child = children[i];
+        if ((child.nodeType === 1 || child.nodeType===3) ){
+            if ( child.tagName === undefined ){
+                child.tagName = "text";
+            }
+            if ( child.tagName.toLowerCase() === key ){
+                if (ix == offset){
+                    console.log('child:' + child);
+                    var next = str_path.indexOf(']');
+                    if (next < 0){
+                        return child;
+                    }
+                    return getelement(child, str_path.substr(next+1));
+                }
+                ix++;
+            }
+        }
+    }
+}
 
 $(document).ready(function(){
   if (typeof(WebSocket) != 'undefined' || typeof(MozWebSocket)) {
@@ -63,9 +102,10 @@ $(document).ready(function(){
       if (typeof obj != 'object') return;
 
       var action = obj['action'];
-      var struct = container.find('li.' + action + ':first');
+      console.log("action:" +  action);
 
       if (action == 'message') {
+        var struct = container.find('li.' + action + ':first');
 		var msg = struct.clone();
 		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
 		var matches;
@@ -80,6 +120,7 @@ $(document).ready(function(){
         container.find('ul').append(msg.show());
         container.scrollTop(container.find('ul').innerHeight());
       } else if (action == 'control') {
+        var struct = container.find('li.' + action + ':first');
 		var msg = struct.clone();
 		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
         msg.find('.user').text(obj['user']);
@@ -90,6 +131,11 @@ $(document).ready(function(){
 		container.scrollTop(container.find('ul').innerHeight());
 	  } else if (action == 'loadfile') {
 		$('#editor').html(obj['content']);
+      } else if (action == 'change') {
+        var changeroot= document.getElementById('usergenerated');
+        var offset = 2;
+        var node = getelement(changeroot, '//p[2]/text[2]');
+        node.nodeValue = node.nodeValue.substring(0, offset) + " IM changed! " + node.nodeValue.substr(offset);
       }
 
     }

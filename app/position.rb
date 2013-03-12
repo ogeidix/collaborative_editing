@@ -20,5 +20,9 @@ module CollaborativeEditing
 	def child_number
 	    @node.match( /text\[(\d+)?\]$/)[1]
 	end
+
+    def to_hash
+        return { :node => @node, :offset => @y, :version => @version}
+    end
     end
 end

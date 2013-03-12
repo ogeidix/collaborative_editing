@@ -22,5 +22,9 @@ module CollaborativeEditing
             #    ....
             return false
         end
+
+        def to_hash
+            return { :user => @username, :position => position.to_hash, :type => @type, :content => @change}
+        end
     end
 end

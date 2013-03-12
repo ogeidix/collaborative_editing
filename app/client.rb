@@ -17,8 +17,8 @@ module CollaborativeEditing
     end
 
     def send_to_browser(message)
-	message = encode_json(message) if message.class != String
-        render message
+	  message = encode_json(message) if message.class != String
+      render message
     end
 
     def received_data(data)
@@ -46,6 +46,9 @@ module CollaborativeEditing
 
           if (@room.request_change change)
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
+
+            # broadcast to client to merge
+            broadcast :action => 'change', :user => @username, :change => change.to_hash;
           else
             broadcast :action => 'control', :user => @username, :message => 'request change denied'
           end
