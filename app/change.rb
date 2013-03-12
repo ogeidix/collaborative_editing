@@ -1,12 +1,13 @@
 module CollaborativeEditing
     class Change 
 
-        attr_reader :username, :position, :changes
+        attr_reader :username, :position, :change
 
-        def initialize (author, position, changes)
+        def initialize (author, position, new_change)
             @username = author
             @position = position
-            @changes = changes
+            @change = new_change
+            @type = 'add'
         end
 
         def conflict?(position)

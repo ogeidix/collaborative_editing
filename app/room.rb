@@ -32,6 +32,7 @@ module CollaborativeEditing
                 return false if change.conflict? client.position
             }
 	    @document.execute_change change
+	    @changes.push()
             # - prepare change -> merge inside document
             # - commit change
             # - add the change to @changes so that the version translation code 
