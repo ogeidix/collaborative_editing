@@ -155,8 +155,14 @@ $(document).ready(function(){
   }); 
 
   $('#editor').bind('keypress', function(event) {
+      selection = rangy.getSelection();
+      node = generateXPath(selection.anchorNode);
+      offset = selection.anchorOffset;
       console.log("keypress" + event.charCode);
-      $('#changes').val(String.fromCharCode(event.charCode));
+      edit = String.fromCharCode(event.charCode);
+      $('#changes').val(edit);
+      var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
+      ws.send(json);
   });
 
   }
