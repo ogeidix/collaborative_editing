@@ -154,6 +154,11 @@ $(document).ready(function(){
       ws.send(json);
   }); 
 
+  $('#editor').bind('keypress', function(event) {
+      console.log("keypress" + event.charCode);
+      $('#changes').val(String.fromCharCode(event.charCode));
+  });
+
   }
 
 });
