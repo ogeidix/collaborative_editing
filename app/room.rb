@@ -31,6 +31,7 @@ module CollaborativeEditing
         end
 
         def join(username)
+            Application.logger.info format_log("#{username} joined the file")
             broadcast :action => 'control', :user => username, :message => 'joined the file ' + document.name
         end
 
@@ -45,7 +46,7 @@ module CollaborativeEditing
                 next if client.username == change.username
                 return false if change.conflict? client.position
             }
-            
+
             @document.execute_change change
             @changes.push change
             # - prepare change -> merge inside document
@@ -53,6 +54,10 @@ module CollaborativeEditing
             # - add the change to @changes so that the version translation code 
             # can use it
             #
+
+            # log this change for recovery purpose
+            secure_change_in_logs(change)
+
             broadcast :action => 'control', :user => change.username, :message => 'request change granted'
             broadcast :action => 'change', :user => change.username, :node => change.position.node, :y => change.position.y, :version => document.version, :changes => change.change
 
@@ -77,6 +82,22 @@ module CollaborativeEditing
             }
             broadcast :action => 'control', :user => username, :message => 'request relocate granted'
             return true
+        end
+
+        def format_log(message)
+            return @document.name.to_s + " v" + document.version.to_s + " - " + message
+        end
+
+        def secure_change_in_logs(change)
+            Application.logger.recovery  @document.name.to_s + " !$! " \
+                + @document.version.to_s + " !$! " \
+                + Digest::MD5.hexdigest(@document.rexml_doc.to_s) + " !$! " \
+                + "change_file !$! " \
+                + change.username.to_s + " !$! " \
+                + change.position.node.to_s + " !$! " \
+                + change.position.y.to_s + " !$! " \
+                + @document.version.to_s 
+                #+ " !$! " + msg[:changes]
         end
     end
 end
