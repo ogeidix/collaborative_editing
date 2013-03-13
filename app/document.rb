@@ -21,7 +21,7 @@ module CollaborativeEditing
         end
     
         def execute_change(this_change)
-            puts "Parent: #{this_change.position.parent_node} - Child Num. #{this_change.position.child_number}"
+#            puts "Parent: #{this_change.position.parent_node} - Child Num. #{this_change.position.child_number}"
             parent_node = REXML::XPath.first @rexml_doc, this_change.position.parent_node
             i = 0
             n = 0
@@ -32,19 +32,17 @@ module CollaborativeEditing
             end
             current_node = parent_node.children[n-1]
             if  this_change.change[0].ord == 8
-                puts "delete"
+#                puts "delete"
                 this_length = this_change.change.length
                 current_node.value = current_node.value[0, this_change.position.y - this_length] +current_node.value[this_change.position.y, current_node.value.length]
             else
                 current_node.value = current_node.value[0, this_change.position.y] + this_change.change.to_s + current_node.value[this_change.position.y, current_node.value.length]
             end
-                puts "Changed node : " + current_node.value
+#                puts "Changed node : " + current_node.value
                 #print @rexml_doc
                 @version += 1
-                @rexml_doc[1][1].string = "version = " + @version.to_s
-                @rexml_doc[1][3].string = "md5_checksum = " + Digest::MD5.hexdigest(@rexml_doc.to_s)
-                #File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
-                puts "version changed to " + @version.to_s
+                # File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
+ #               puts "version changed to " + @version.to_s
         end
     end
 end

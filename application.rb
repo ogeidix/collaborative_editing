@@ -14,7 +14,7 @@ module CollaborativeEditing
 
     def self.initialize!
       Cramp::Websocket.backend = :thin
-      @logger = Logger.new 'app/collabedit.log'
+      @logger = Logger.new 'app/collabedit.log', (ENV['LOG'] || 'info').split(',')
     end
 
     def self.logger
