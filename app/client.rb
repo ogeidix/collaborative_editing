@@ -47,6 +47,7 @@ module CollaborativeEditing
           if (@room.request_change change)
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
 
+            puts "in client: change is :" + msg[:changes]
             # broadcast to client to merge
             #broadcast :action => 'change', :user => @username, :change => change.to_hash;
             broadcast :action => 'change', :user => @username, :node => msg[:node], :y => msg[:y], :version => @room.document.version, :changes => msg[:changes] 
