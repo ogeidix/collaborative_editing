@@ -39,7 +39,11 @@ module CollaborativeEditing
             # - check for conflict
             @clients.each { |client|
                 next if client.username == change.username
-                return false if change.conflict? client.position
+                next if client.position.nil?
+                if change.conflict? client.position 
+                    broadcast :action => 'lock', :user => change.username, :when => 'change', :granted => false
+                    return false 
+                end
             }
             
             @document.execute_change change
@@ -51,6 +55,7 @@ module CollaborativeEditing
             #
             broadcast :action => 'control', :user => change.username, :message => 'request change granted'
             broadcast :action => 'change', :user => change.username, :node => change.position.node, :y => change.position.y, :version => document.version, :changes => change.change
+            broadcast :action => 'lock', :user => change.username, :when => 'change', :granted => true
 
             # else 
             #             broadcast :action => 'control', :user => @username, :message => 'request change denied'
@@ -60,18 +65,19 @@ module CollaborativeEditing
         def request_relocate(username, position)
             broadcast :action => 'control', :user => username, :message => 'request relocate pos: ( ' + position.node + ',' + position.y.to_s + '), @' + position.version.to_s;
             if (@document.version != position.version)
-                puts "relocate denied: wrong versin"
+                broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => false
                 broadcast :action => 'control', :user => username, :message => 'request relocate denied'
                 return false 
             end
             @clients.each { |client| 
                 if (client.position == position && client.username != username)
-                    puts "relocate denied: conflic position"
+                    broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => false
                     broadcast :action => 'control', :user => username, :message => 'request relocate denied'
                     return false
                 end
             }
             broadcast :action => 'control', :user => username, :message => 'request relocate granted'
+            broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => true
             return true
         end
     end

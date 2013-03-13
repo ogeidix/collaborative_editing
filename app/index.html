@@ -92,6 +92,7 @@ $(document).ready(function(){
 
   function join(name) {
     var host = window.location.host.split(':')[0];
+    var waiting = false;
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
     var ws = new SocketKlass('ws://' + window.location.hostname + ':3000/client/'+$('#filename').val());
@@ -106,10 +107,10 @@ $(document).ready(function(){
 
       if (action == 'message') {
         var struct = container.find('li.' + action + ':first');
-		var msg = struct.clone();
-		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
-		var matches;
-		if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
+        var msg = struct.clone();
+        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
+        var matches;
+        if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
           msg.find('.user').text(obj['user'] + ' ' + matches[1]);
           msg.find('.user').css('font-weight', 'bold');
         } else {
@@ -121,16 +122,16 @@ $(document).ready(function(){
         container.scrollTop(container.find('ul').innerHeight());
       } else if (action == 'control') {
         var struct = container.find('li.' + action + ':first');
-		var msg = struct.clone();
-		msg.find('.time').text((new Date()).toString("HH:mm:ss"));
+        var msg = struct.clone();
+        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
         msg.find('.user').text(obj['user']);
         msg.find('.message').text(obj['message']);
         msg.addClass('control');
-		if (obj['user'] == name) msg.find('.user').addClass('self');
-		container.find('ul').append(msg.show());
-		container.scrollTop(container.find('ul').innerHeight());
-	  } else if (action == 'loadfile') {
-		$('#editor').html(obj['content']);
+        if (obj['user'] == name) msg.find('.user').addClass('self');
+        container.find('ul').append(msg.show());
+        container.scrollTop(container.find('ul').innerHeight());
+      } else if (action == 'loadfile') {
+        $('#editor').html(obj['content']);
         documentVersion = obj['version'] ;
         $('#version').val(documentVersion);
       } else if (action == 'change') {
@@ -147,6 +148,20 @@ $(document).ready(function(){
         }else{
             documentVersion = obj['version'] ;
             $('#version').val(documentVersion);
+        }
+      } else if (action == 'lock'){
+        var username = obj['user'];
+        if (username == name){
+            console.log("granted as " + obj['granted']);
+            if (obj['granted']){
+              console.log("inside");
+              $('#editor').attr("contenteditable",true);
+              waiting=false;
+            }else if (obj['when']=='relocate'){
+              window.alert("conflict position! please choose another position");
+              $('#editor').attr("contenteditable",true);
+              waiting=false;
+            }
         }
       }
 
@@ -200,6 +215,9 @@ $(document).ready(function(){
     });
 
   $('#editor').bind('click', function() {
+      if (waiting){
+          return false;
+      }
       selection = rangy.getSelection();
       node = generateXPath(selection.anchorNode);
       offset = selection.anchorOffset;
@@ -210,6 +228,8 @@ $(document).ready(function(){
       console.log("Click In: " + node + ", " + offset + " @ v"+documentVersion);
       var json = JSON.stringify({"action":"relocate", "node": node, "y": offset, "version": documentVersion});
       ws.send(json);
+      $('#editor').attr("contenteditable",false);
+      waiting=true;
   }); 
 
   $('#editor').bind('keypress', function(event) {
@@ -230,23 +250,21 @@ $(document).ready(function(){
   });
 
   $('#editor').bind('keydown', function(event) {
+      if(waiting){
+          return false;
+      }
       if (event.keyCode != 8){
           return true;
-      }
-      while (true){
-          
       }
       selection = rangy.getSelection();
       node = generateXPath(selection.anchorNode);
       offset = selection.anchorOffset;
-      console.log("keypress" + event.charCode);
-      edit = String.fromCharCode(event.charCode);
-      if ( event.keyCode == 8){
-        edit = "\b";
-      }
+      edit = "\b";
       $('#changes').val(edit);
       var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
       ws.send(json);
+      $('#editor').attr("contenteditable",false);
+      waiting=true;
   });
 
   }
