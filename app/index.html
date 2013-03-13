@@ -141,7 +141,7 @@ $(document).ready(function(){
             var node = getelement(changeroot, obj['node']);
             console.log("node is:" +node);
             var edit = obj['changes'];
-            node.nodeValue = node.nodeValue.substring(0, offset) + " |" + username + "| " + edit + " " + node.nodeValue.substr(offset);
+            node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
             documentVersion = obj['version'] ;
             $('#version').val(documentVersion);
         }else{
@@ -213,11 +213,37 @@ $(document).ready(function(){
   }); 
 
   $('#editor').bind('keypress', function(event) {
+      if(event.charCode ==  0){
+          return true
+      }
       selection = rangy.getSelection();
       node = generateXPath(selection.anchorNode);
       offset = selection.anchorOffset;
       console.log("keypress" + event.charCode);
       edit = String.fromCharCode(event.charCode);
+      if ( event.keyCode == 13){
+        edit = "\n";
+      }
+      $('#changes').val(edit);
+      var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
+      ws.send(json);
+  });
+
+  $('#editor').bind('keydown', function(event) {
+      if (event.keyCode != 8){
+          return true;
+      }
+      while (true){
+          
+      }
+      selection = rangy.getSelection();
+      node = generateXPath(selection.anchorNode);
+      offset = selection.anchorOffset;
+      console.log("keypress" + event.charCode);
+      edit = String.fromCharCode(event.charCode);
+      if ( event.keyCode == 8){
+        edit = "\b";
+      }
       $('#changes').val(edit);
       var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
       ws.send(json);

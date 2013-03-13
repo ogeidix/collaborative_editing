@@ -37,6 +37,7 @@ module CollaborativeEditing
                 next if client.username == change.username
                 return false if change.conflict? client.position
             }
+            
             @document.execute_change change
             @changes.push change
             # - prepare change -> merge inside document

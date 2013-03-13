@@ -31,12 +31,18 @@ module CollaborativeEditing
                 n += 1
             end
             current_node = parent_node.children[n-1]
-            current_node.value = current_node.value[0, this_change.position.y] + this_change.change.to_s + current_node.value[this_change.position.y, current_node.value.length]
-            puts "Changed node : " + current_node.value
-            #print @rexml_doc
-            @version += 1
-            # File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
-            puts "version changed to " + @version.to_s
+            if  this_change.change[0].ord == 8
+                puts "delete"
+                this_length = this_change.change.length
+                current_node.value = current_node.value[0, this_change.position.y - this_length] +current_node.value[this_change.position.y, current_node.value.length]
+            else
+                current_node.value = current_node.value[0, this_change.position.y] + this_change.change.to_s + current_node.value[this_change.position.y, current_node.value.length]
+            end
+                puts "Changed node : " + current_node.value
+                #print @rexml_doc
+                @version += 1
+                # File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
+                puts "version changed to " + @version.to_s
         end
     end
 end

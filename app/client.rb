@@ -54,6 +54,7 @@ module CollaborativeEditing
           if (@room.request_change change)
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
 
+            puts "in client: change is :" + msg[:changes]
             # log this change for recovery purpose
             Application.logger.log Time.now.to_s + " !$! " \
                 + @filename.to_s + " !$! " \
