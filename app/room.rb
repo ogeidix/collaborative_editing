@@ -59,15 +59,12 @@ module CollaborativeEditing
             # can use it
             #
 
-            # log this change for recovery purpose
-            secure_change_in_logs(change)
-
             broadcast :action => 'control', :user => change.username, :message => 'request change granted'
             broadcast :action => 'change', :user => change.username, :node => change.position.node, :y => change.position.y, :version => document.version, :changes => change.change
             broadcast :action => 'lock', :user => change.username, :when => 'change', :granted => true
 
             # else 
-            #             broadcast :action => 'control', :user => @username, :message => 'request change denied'
+            #   broadcast :action => 'control', :user => @username, :message => 'request change denied'
             return true
         end
 
@@ -92,18 +89,6 @@ module CollaborativeEditing
 
         def format_log(message)
             return @document.name.to_s + " v" + document.version.to_s + " - " + message
-        end
-
-        def secure_change_in_logs(change)
-            Application.logger.recovery  @document.name.to_s + " !$! " \
-                + @document.version.to_s + " !$! " \
-                + Digest::MD5.hexdigest(@document.rexml_doc.to_s) + " !$! " \
-                + "change_file !$! " \
-                + change.username.to_s + " !$! " \
-                + change.position.node.to_s + " !$! " \
-                + change.position.y.to_s + " !$! " \
-                + @document.version.to_s 
-                #+ " !$! " + msg[:changes]
         end
     end
 end

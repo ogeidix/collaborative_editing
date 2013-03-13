@@ -1,17 +1,24 @@
 module CollaborativeEditing
     class Logger
     
+      attr_reader :lsn, :DELIMITER
+      
     	def initialize(logfile_name, levels)
     	   @logfilename = logfile_name
          @level       = levels
+         @DELIMITER   = " !!! "
     		
     	     # TODO: before doing anything, apply recovery from the existing log file
            # delete an existing log file from older revision
            if File.file?(@logfilename)
-             File.delete(@logfilename)
+              File.delete(@logfilename)
+              @lsn = 0
+           else 
+              @lsn = %x{wc -l < "#{@logfilename}"}.to_i
            end
       
            # open the log file in append mode
+          
            @logfile = File.open(@logfilename, "a")      
     	end
 
@@ -38,7 +45,8 @@ module CollaborativeEditing
         end
 
         def log_to_file(message)
-          message = Time.now.to_s + " !$! " + message
+          #message = Time.now.to_s + @DELIMITER + message
+          @lsn += 1
           @logfile.puts(message)
           @logfile.flush
         end
