@@ -1,13 +1,30 @@
 module CollaborativeEditing
     class Logger
+
+      #foreground color
+      BLACK   = "\033[30m"
+      RED     = "\033[31m"
+      GREEN   = "\033[32m"
+      BROWN   = "\033[33m"
+      BLUE    = "\033[34m"
+      MAGENTA = "\033[35m"
+      CYAN    = "\033[36m"
+      GRAY    = "\033[37m"
+
+      #ANSI control chars
+      RESET_COLORS   = "\033[0m"
+      BOLD_ON        = "\033[1m"
+      BOLD_OFF       = "\033[22m"
+      BLINK_ON       = "\033[5m"
+      BLINK_OFF      = "\033[25m"
     
       attr_reader :lsn, :DELIMITER
       
     	def initialize(logfile_name, levels)
     	   @logfilename = logfile_name
-         @level       = levels
+         @levels      = levels
          @DELIMITER   = " !!! "
-    		
+
     	     # TODO: before doing anything, apply recovery from the existing log file
            # delete an existing log file from older revision
            if File.file?(@logfilename)
@@ -23,25 +40,27 @@ module CollaborativeEditing
     	end
 
       def debug(message)
-        return unless @level.include?('debug')
+        return unless @levels.include?('debug')
         log_to_stdout message, 'd'
       end
 
       def info(message)
-        return unless @level.include?('info')
+        return unless @levels.include?('info')
         log_to_stdout message
       end
 
       def recovery(message)
         log_to_file message 
-        return unless @level.include?('recovery')
+        return unless @levels.include?('recovery')
         log_to_stdout message, 'r'
       end
 
       private
 
         def log_to_stdout(message, level = 'i')
-          puts "[logger] (" + level + ") " + Time.now.to_s + " " + message.to_s
+          colors = { i: BLUE, d: BROWN, r: MAGENTA }
+          color  = @levels.include?('color') ? colors[level.to_sym] : RESET_COLORS
+          puts color + "[logger] (" + level + ") " + Time.now.to_s + " " + message.to_s + RESET_COLORS
         end
 
         def log_to_file(message)
