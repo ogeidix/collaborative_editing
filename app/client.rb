@@ -22,6 +22,7 @@ module CollaborativeEditing
     end
 
     def received_data(data)
+      Application.logger.log("data received");
       msg = parse_json(data)
       case msg[:action]
         when 'join'
