@@ -14,7 +14,7 @@ module CollaborativeEditing
         end
 
         def broadcast(message)
-            @clients.each { |client| client.send_to_browser encode_json(message) }
+            @clients.each { |client| client.send_to_browser Yajl::Encoder.encode(message) }
         end
 
         def subscribe(client)
