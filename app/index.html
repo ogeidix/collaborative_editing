@@ -64,6 +64,8 @@ function getelement(root, str_path){
     }
 }
 
+var ws;
+
 $(document).ready(function(){
   if (typeof(WebSocket) != 'undefined' || typeof(MozWebSocket)) {
     $('#ask').show();
@@ -95,7 +97,13 @@ $(document).ready(function(){
     var waiting = false;
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-    var ws = new SocketKlass('ws://' + window.location.hostname + ':3000/client/'+$('#filename').val());
+    ws = new SocketKlass('ws://' + window.location.hostname + ':3000/client/'+$('#filename').val());
+
+    window.onunload = function(e) {
+        ws.send($.toJSON({ action: 'bye'}));
+        ws.close();
+        return true;
+    };
 
     var container = $('div#msgs');
     ws.onmessage = function(evt) {
@@ -150,8 +158,6 @@ $(document).ready(function(){
             $('#version').val(documentVersion);
         }
       } else if (action == 'lock'){
-        var username = obj['user'];
-        if (username == name){
             console.log("granted as " + obj['granted']);
             if (obj['granted']){
               console.log("inside");
@@ -162,7 +168,6 @@ $(document).ready(function(){
               $('#editor').attr("contenteditable",true);
               waiting=false;
             }
-        }
       }
 
     }

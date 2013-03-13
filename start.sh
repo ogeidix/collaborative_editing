@@ -1,1 +1,1 @@
-LOG=recovery,info,debug,color bundle exec thin --timeout 0 start
+LOG=recovery,warning,info,debug,color bundle exec thin --timeout 0 start

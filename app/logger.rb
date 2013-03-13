@@ -33,10 +33,8 @@ module CollaborativeEditing
            else 
               @lsn = %x{wc -l < "#{@logfilename}"}.to_i
            end
-      
-           # open the log file in append mode
-          
-           @logfile = File.open(@logfilename, "a")      
+
+         @logfile = File.open(@logfilename, "a")      
     	end
 
       def debug(message)
@@ -49,6 +47,11 @@ module CollaborativeEditing
         log_to_stdout message
       end
 
+      def warning(message)
+        return unless @levels.include?('warning')
+        log_to_stdout message, 'w'
+      end
+
       def recovery(message)
         log_to_file message 
         return unless @levels.include?('recovery')
@@ -58,7 +61,7 @@ module CollaborativeEditing
       private
 
         def log_to_stdout(message, level = 'i')
-          colors = { i: BLUE, d: BROWN, r: MAGENTA }
+          colors = { i: BLUE, d: BROWN, r: MAGENTA, w: RED }
           color  = @levels.include?('color') ? colors[level.to_sym] : RESET_COLORS
           puts color + "[logger] (" + level + ") " + Time.now.to_s + " " + message.to_s + RESET_COLORS
         end

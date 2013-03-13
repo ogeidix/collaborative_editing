@@ -3,6 +3,7 @@ module CollaborativeEditing
         @@rooms = {}
 
         attr_reader :document
+
         def self.for(document)
             @@rooms[document] ||= Room.new(document)
         end
@@ -11,10 +12,7 @@ module CollaborativeEditing
             @document  = Document.new(document)
             @clients = []
             @changes = []
-        end
-
-        def broadcast(message)
-            @clients.each { |client| client.send_to_browser message }
+            Application.logger.info format_log("room created")
         end
 
         def subscribe(client)
@@ -22,17 +20,18 @@ module CollaborativeEditing
         end
 
         def unsubscribe(client)
+            Application.logger.info format_log("#{client.username} left the file")
             @clients.delete client
-            broadcast :action => 'control', :user => @username, :message => 'left the room'
-        end
-
-        def talk(message)
-            broadcast message
+            broadcast :action => 'control', :user => client.username, :message => 'left the room'
         end
 
         def join(username)
             Application.logger.info format_log("#{username} joined the file")
             broadcast :action => 'control', :user => username, :message => 'joined the file ' + document.name
+        end
+
+        def talk(username, message)
+            broadcast action: 'message', user: username, message: message
         end
 
         def request_change(change)
@@ -69,26 +68,31 @@ module CollaborativeEditing
         end
 
         def request_relocate(username, position)
-            broadcast :action => 'control', :user => username, :message => 'request relocate pos: ( ' + position.node + ',' + position.y.to_s + '), @' + position.version.to_s;
-            if (@document.version != position.version)
-                broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => false
-                broadcast :action => 'control', :user => username, :message => 'request relocate denied'
+            Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")
+            if (@document.version != position.version or new_position_conflict_with_others(username, position))
+                Application.logger.debug format_log("request relocate - user: #{username} status: denied")
                 return false 
             end
-            @clients.each { |client| 
-                if (client.position == position && client.username != username)
-                    broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => false
-                    broadcast :action => 'control', :user => username, :message => 'request relocate denied'
-                    return false
-                end
-            }
-            broadcast :action => 'control', :user => username, :message => 'request relocate granted'
-            broadcast :action => 'lock', :user => username, :when => 'relocate', :granted => true
+            Application.logger.debug format_log("request relocate - user: #{username} status: granted")
             return true
         end
 
-        def format_log(message)
-            return @document.name.to_s + " v" + document.version.to_s + " - " + message
-        end
+        private
+            def broadcast(message)
+                Application.logger.debug format_log("broadcast: " + message.to_s)
+                @clients.each { |client| client.send_to_browser message }
+            end
+
+            def format_log(message)
+                return "[room] " + @document.name.to_s + " v" + document.version.to_s + " - " + message
+            end
+
+            def new_position_conflict_with_others(username, position)
+                @clients.each { |client| 
+                    next         if client.username == username
+                    return true if client.position == position
+                }
+                return false
+            end
     end
 end
