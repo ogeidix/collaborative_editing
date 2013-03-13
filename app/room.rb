@@ -9,9 +9,8 @@ module CollaborativeEditing
         end
 
         def initialize(document)
-            @document  = Document.new(document)
-            @clients = []
-            @changes = []
+            @document = Document.new(document)
+            @clients  = []
             Application.logger.info format_log("room created")
         end
 
@@ -34,42 +33,40 @@ module CollaborativeEditing
             broadcast action: 'message', user: username, message: message
         end
 
-        def request_change(change)
-            broadcast :action => 'control', :user => change.username, :message => 'request change pos: ( ' + change.position.node + ',' + change.position.y.to_s + '), @' + change.position.version.to_s + ':' + change.change;
-            # FOR NOW DO NOT TRANSLATE position in current version
-            # if check position is == to client position
-            # 
-            # ALGORITHM:
-            # - check for conflict
+        def request_change(client, change)
+            Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.change}")
+
+            # Check coherence of position
+            if (client.position != change.position)
+                Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: position incoherent")
+                return false
+            end
+
+            # Check for conflict
             @clients.each { |client|
                 next if client.username == change.username
                 next if client.position.nil?
-                if change.conflict? client.position 
-                    broadcast :action => 'lock', :user => change.username, :when => 'change', :granted => false
-                    return false 
+                if change.conflict? client.position
+                    Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: conflict")
+                    return false
                 end
             }
 
             @document.execute_change change
-            @changes.push change
-            # - prepare change -> merge inside document
-            # - commit change
-            # - add the change to @changes so that the version translation code 
-            # can use it
-            #
+            broadcast action:  'change',
+                      user:    change.username,
+                      node:    change.position.node,
+                      y:       change.position.y,
+                      version: document.version,
+                      changes: change.change
 
-            broadcast :action => 'control', :user => change.username, :message => 'request change granted'
-            broadcast :action => 'change', :user => change.username, :node => change.position.node, :y => change.position.y, :version => document.version, :changes => change.change
-            broadcast :action => 'lock', :user => change.username, :when => 'change', :granted => true
-
-            # else 
-            #   broadcast :action => 'control', :user => @username, :message => 'request change denied'
+            Application.logger.debug format_log("request change - user: #{change.username} status: granted")
             return true
         end
 
         def request_relocate(username, position)
             Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")
-            if (@document.version != position.version or new_position_conflict_with_others(username, position))
+            if (@document.version != position.version or conflict_with_others(username, position))
                 Application.logger.debug format_log("request relocate - user: #{username} status: denied")
                 return false 
             end
@@ -87,7 +84,7 @@ module CollaborativeEditing
                 return "[room] " + @document.name.to_s + " v" + document.version.to_s + " - " + message
             end
 
-            def new_position_conflict_with_others(username, position)
+            def conflict_with_others(username, position)
                 @clients.each { |client| 
                     next         if client.username == username
                     return true if client.position == position

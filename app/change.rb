@@ -10,6 +10,15 @@ module CollaborativeEditing
             @type = 'add'
         end
 
+        def new_position(document_version)
+            new_y = @position.y + @change.length
+            return Position.new(position.node, new_y, document_version)
+        end
+
+        def deletion?
+            @change[0].ord == 8
+        end
+
         def conflict?(position)
             return true if @position == position
 			# IF the versions dont match, then we need to bring them to the same version 
