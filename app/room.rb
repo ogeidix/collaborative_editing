@@ -30,6 +30,10 @@ module CollaborativeEditing
             broadcast message
         end
 
+        def join(username)
+            broadcast :action => 'control', :user => username, :message => 'joined the file ' + document.name
+        end
+
         def request_change(change)
             broadcast :action => 'control', :user => change.username, :message => 'request change pos: ( ' + change.position.node + ',' + change.position.y.to_s + '), @' + change.position.version.to_s + ':' + change.change;
             # FOR NOW DO NOT TRANSLATE position in current version

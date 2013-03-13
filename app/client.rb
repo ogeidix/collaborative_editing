@@ -41,7 +41,7 @@ module CollaborativeEditing
           send_to_browser :action => 'loadfile', :content => content, :version => @room.document.version
 
           # Broadcast a message to all participants indicating the new member
-          broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
+          @room.join @username
         when 'message'
           @room.talk msg.merge(:user => @username)
           
@@ -72,16 +72,8 @@ module CollaborativeEditing
     end
     
     private
-      def broadcast(message)
-        @room.broadcast(message)
-      end
-      
-      def encode_json(obj)
-        Yajl::Encoder.encode(obj)
-      end
-      
       def parse_json(str)
-	    str.gsub!("'","\\\\'")
+        str.gsub!("'","\\\\'")
         Yajl::Parser.parse(str, :symbolize_keys => true)
       end
   end
