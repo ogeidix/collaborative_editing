@@ -41,7 +41,9 @@ module CollaborativeEditing
                 puts "Changed node : " + current_node.value
                 #print @rexml_doc
                 @version += 1
-                # File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
+                @rexml_doc[1][1].string = "version = " + @version.to_s
+                @rexml_doc[1][3].string = "md5_checksum = " + Digest::MD5.hexdigest(@rexml_doc.to_s)
+                #File.open("data/" + name + ".ver." + @version.to_s, 'w') {|f| f.write(@rexml_doc) }
                 puts "version changed to " + @version.to_s
         end
     end
