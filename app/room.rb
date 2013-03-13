@@ -42,9 +42,15 @@ module CollaborativeEditing
         end
 
         def request_relocate(username, position)
-            return false if (@document.version != position.version)
+            if (@document.version != position.version)
+                puts "relocate denied: wrong versin"
+                return false 
+            end
             @clients.each { |client| 
-             return false if (client.position == position && client.username != username)
+                if (client.position == position && client.username != username)
+                    puts "relocate denied: conflic position"
+                    return false
+                end
             }
             return true
         end

@@ -16,9 +16,9 @@ function generateXPath(element) {
     for (var i= 0; i<siblings.length; i++) {
         var sibling = siblings[i];
         if (sibling===element){
-            return generateXPath(element.parentNode)+'/'+ (element.tagName || "text").toLowerCase() +'['+(ix+1)+']';
+            return generateXPath(element.parentNode)+'/'+ (element.nodeName|| "text").toLowerCase() +'['+(ix+1)+']';
         }
-        if ((sibling.nodeType===1 || sibling.nodeType===3) && sibling.tagName===element.tagName){
+        if ((sibling.nodeType===1 || sibling.nodeType===3) && sibling.nodeName===element.nodeName){
             ix++;
         }
     }
@@ -46,10 +46,10 @@ function getelement(root, str_path){
     for( var i = 0; i < children.length; i++){
         var child = children[i];
         if ((child.nodeType === 1 || child.nodeType===3) ){
-            if ( child.tagName === undefined ){
-                child.tagName = "text";
-            }
-            if ( child.tagName.toLowerCase() === key ){
+            //if ( child.tagName === undefined ){
+            //    child.tagName = "text";
+            //}
+            if ( child.nodeName.toLowerCase() === key ){
                 if (ix == offset){
                     console.log('child:' + child);
                     var next = str_path.indexOf(']');
@@ -141,9 +141,9 @@ $(document).ready(function(){
             var node = getelement(changeroot, obj['node']);
             console.log("node is:" +node);
             var edit = obj['changes'];
-            node.nodeValue = node.nodeValue.substring(0, offset) + " |" + username + "| " + edits + " " + node.nodeValue.substr(offset);
-            var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edits});
-            ws.send(json);
+            node.nodeValue = node.nodeValue.substring(0, offset) + " |" + username + "| " + edit + " " + node.nodeValue.substr(offset);
+            documentVersion = obj['version'] ;
+            $('#version').val(documentVersion);
         }else{
             documentVersion = obj['version'] ;
             $('#version').val(documentVersion);

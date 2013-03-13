@@ -10,7 +10,7 @@ module CollaborativeEditing
         end
 
         def == (another)
-            return @node == node && @y == y && @version == version
+            return @node == another.node && @y == another.y && @version == another.version
         end
 	
 	def parent_node
