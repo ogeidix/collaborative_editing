@@ -14,12 +14,18 @@ module CollaborativeEditing
         end
 
         def broadcast(message)
-            @clients.each { |client| client.send_to_browser(message) }
+            @clients.each { |client| client.send_to_browser encode_json(message) }
         end
 
         def subscribe(client)
             @clients << client 
         end
+
+        def unsubscribe(client)
+            @clients.delete client
+            broadcast :action => 'control', :user => @username, :message => 'left the room'
+        end
+
 
         def request_change(change)
             # FOR NOW DO NOT TRANSLATE position in current version

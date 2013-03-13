@@ -8,16 +8,16 @@ module CollaborativeEditing
 
     def join_room
       @filename = params[:document]
-      @room = Room.for(@filename)
-      @room.subscribe self
+      @room     = Room.for(@filename)
+      @room.subscribe(self)
     end
     
     def leave_room
-      broadcast :action => 'control', :user => @username, :message => 'left the room'
+      @room.subscribe(self)
     end
 
     def send_to_browser(message)
-	  message = encode_json(message) if message.class != String
+	    message = encode_json(message) if message.class != String
       render message
     end
 
@@ -85,7 +85,7 @@ module CollaborativeEditing
     
     private
       def broadcast(message)
-        @room.broadcast(encode_json(message))
+        @room.broadcast(message)
       end
       
       def encode_json(obj)
