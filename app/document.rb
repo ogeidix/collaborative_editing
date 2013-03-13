@@ -9,7 +9,7 @@ module CollaborativeEditing
         def initialize(name)
             @name = name
             # HACK to be deleted later
-            @version = 3        
+            @version = 1        
             
             # server maintains all files under $COLLAB_EDITOR_HOME/data/
             # if file exists, then send its contents, else create a new file with default content

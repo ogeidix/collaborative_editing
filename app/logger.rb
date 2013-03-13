@@ -1,13 +1,22 @@
 module CollaborativeEditing
     class Logger
-
+    
     	def initialize(logfile_name)
-    		@logfile_name = logfile_name
-    		puts "[logger #{@logfile_name}] init logger"
+    	   @logfilename = logfile_name
+    		
+    	     # TODO: before doing anything, apply recovery from the existing log file
+           # delete an existing log file from older revision
+           if File.file?(@logfilename)
+             File.delete(@logfilename)
+           end
+      
+           # open the log file in append mode
+           @logfile = File.open(@logfilename, "a")      
     	end
 
     	def log(message)
-			puts "[logger #{@logfile_name}] " + message.to_s
+    	   @logfile.puts(message)
+         @logfile.flush
     	end
     end
 end

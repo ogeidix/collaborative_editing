@@ -22,23 +22,29 @@ module CollaborativeEditing
     end
 
     def received_data(data)
-      Application.logger.log("data received");
       msg = parse_json(data)
       case msg[:action]
         when 'join'
           # send the file to the new participant.
-          @username = msg[:user]
-
-          # Broadcast a message to all participants indicating the new member
-          broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
-#          content = File.read("data/" + @filename + ".ver." + @room.document.version.to_s) 
+          @username = msg[:user]          
           content = @room.document.rexml_doc
+
+          # log this activity
+          Application.logger.log Time.now.to_s + " !$! " \
+                + @filename.to_s + " !$! " \
+                + @room.document.version.to_s + " !$! " \
+                + Digest::MD5.hexdigest(content.to_s) + " !$! " \
+                + "join_file !$! " \
+                + @username.to_s
 
           # send the file contents to the new participant
           send_to_browser :action => 'loadfile', :content => content, :version => @room.document.version
 
+          # Broadcast a message to all participants indicating the new member
+          broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
         when 'message'
           broadcast msg.merge(:user => @username)
+          
         when 'change'
           broadcast :action => 'control', :user => @username, :message => 'request change pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s + ':' + msg[:changes];
           
@@ -48,8 +54,19 @@ module CollaborativeEditing
           if (@room.request_change change)
             broadcast :action => 'control', :user => @username, :message => 'request change granted'
 
+            # log this change for recovery purpose
+            Application.logger.log Time.now.to_s + " !$! " \
+                + @filename.to_s + " !$! " \
+                + @room.document.version.to_s + " !$! " \
+                + Digest::MD5.hexdigest(@room.document.rexml_doc.to_s) + " !$! " \
+                + "change_file !$! " \
+                + @username.to_s + " !$! " \
+                + msg[:node].to_s + " !$! " \
+                + msg[:y].to_s + " !$! " \
+                + @room.document.version.to_s 
+                #+ " !$! " + msg[:changes]
+            
             # broadcast to client to merge
-            #broadcast :action => 'change', :user => @username, :change => change.to_hash;
             broadcast :action => 'change', :user => @username, :node => msg[:node], :y => msg[:y], :version => @room.document.version, :changes => msg[:changes] 
           else
             broadcast :action => 'control', :user => @username, :message => 'request change denied'

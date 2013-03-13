@@ -5,13 +5,16 @@ require 'erb'
 require 'stringio'
 require 'fileutils'
 require 'rexml/document'
+require 'time'
+require 'digest/md5'
 
 module CollaborativeEditing
   class Application
 
+
     def self.initialize!
       Cramp::Websocket.backend = :thin
-      @logger = Logger.new 'test'
+      @logger = Logger.new 'app/collabedit.log'
     end
 
     def self.logger
