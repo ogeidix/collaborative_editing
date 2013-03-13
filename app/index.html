@@ -94,7 +94,7 @@ $(document).ready(function(){
     var host = window.location.host.split(':')[0];
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-    var ws = new SocketKlass('ws://tomato.ics.uci.edu:3000/client/'+$('#filename').val());
+    var ws = new SocketKlass('ws://' + window.location.hostname + ':3000/client/'+$('#filename').val());
 
     var container = $('div#msgs');
     ws.onmessage = function(evt) {

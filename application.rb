@@ -11,6 +11,11 @@ module CollaborativeEditing
 
     def self.initialize!
       Cramp::Websocket.backend = :thin
+      @logger = Logger.new 'test'
+    end
+
+    def self.logger
+      return @logger
     end
 
     def self.root(path = nil)
