@@ -13,7 +13,7 @@ module CollaborativeEditing
     end
     
     def leave_room
-      @room.subscribe(self)
+      @room.unsubscribe(self)
     end
 
     def send_to_browser(message)
