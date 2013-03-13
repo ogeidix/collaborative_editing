@@ -14,7 +14,7 @@ module CollaborativeEditing
         end
 
         def broadcast(message)
-            @clients.each { |client| client.send_to_browser Yajl::Encoder.encode(message) }
+            @clients.each { |client| client.send_to_browser message }
         end
 
         def subscribe(client)
@@ -26,8 +26,12 @@ module CollaborativeEditing
             broadcast :action => 'control', :user => @username, :message => 'left the room'
         end
 
+        def talk(message)
+            broadcast message
+        end
 
         def request_change(change)
+            broadcast :action => 'control', :user => change.username, :message => 'request change pos: ( ' + change.position.node + ',' + change.position.y.to_s + '), @' + change.position.version.to_s + ':' + change.change;
             # FOR NOW DO NOT TRANSLATE position in current version
             # if check position is == to client position
             # 
@@ -45,6 +49,11 @@ module CollaborativeEditing
             # - add the change to @changes so that the version translation code 
             # can use it
             #
+            broadcast :action => 'control', :user => change.username, :message => 'request change granted'
+            broadcast :action => 'change', :user => change.username, :node => change.position.node, :y => change.position.y, :version => document.version, :changes => change.change
+
+            # else 
+            #             broadcast :action => 'control', :user => @username, :message => 'request change denied'
             return true
         end
 

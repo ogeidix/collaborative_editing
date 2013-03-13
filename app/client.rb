@@ -4,21 +4,21 @@ module CollaborativeEditing
     before_start :join_room
     on_finish    :leave_room
     on_data      :received_data
+    
     attr_reader :position, :username
 
     def join_room
       @filename = params[:document]
       @room     = Room.for(@filename)
-      @room.subscribe(self)
+      @room.subscribe self
     end
     
     def leave_room
-      @room.subscribe(self)
+      @room.subscribe self
     end
 
     def send_to_browser(message)
-	    message = encode_json(message) if message.class != String
-      render message
+      render Yajl::Encoder.encode(message)
     end
 
     def received_data(data)
@@ -43,18 +43,13 @@ module CollaborativeEditing
           # Broadcast a message to all participants indicating the new member
           broadcast :action => 'control', :user => @username, :message => 'joined the file ' + params[:document]
         when 'message'
-          broadcast msg.merge(:user => @username)
+          @room.talk msg.merge(:user => @username)
           
         when 'change'
-          broadcast :action => 'control', :user => @username, :message => 'request change pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s + ':' + msg[:changes];
-          
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
-          change = Change.new(@username, position, msg[:changes])
+          change   = Change.new(@username, position, msg[:changes])
+          @room.request_change change
 
-          if (@room.request_change change)
-            broadcast :action => 'control', :user => @username, :message => 'request change granted'
-
-            puts "in client: change is :" + msg[:changes]
             # log this change for recovery purpose
             Application.logger.log Time.now.to_s + " !$! " \
                 + @filename.to_s + " !$! " \
@@ -67,11 +62,6 @@ module CollaborativeEditing
                 + @room.document.version.to_s 
                 #+ " !$! " + msg[:changes]
             
-            # broadcast to client to merge
-            broadcast :action => 'change', :user => @username, :node => msg[:node], :y => msg[:y], :version => @room.document.version, :changes => msg[:changes] 
-          else
-            broadcast :action => 'control', :user => @username, :message => 'request change denied'
-          end
         when 'relocate'
           broadcast :action => 'control', :user => @username, :message => 'request relocate pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s;
           new_position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
