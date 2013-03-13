@@ -63,14 +63,11 @@ module CollaborativeEditing
                 #+ " !$! " + msg[:changes]
             
         when 'relocate'
-          broadcast :action => 'control', :user => @username, :message => 'request relocate pos: ( ' + msg[:node] + ',' + msg[:y].to_s + '), @' + msg[:version].to_s;
           new_position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           if (@room.request_relocate @username, new_position)
             @position = new_position  
-            broadcast :action => 'control', :user => @username, :message => 'request relocate granted'
-          else
-            broadcast :action => 'control', :user => @username, :message => 'request relocate denied'
           end
+
         end
     end
     

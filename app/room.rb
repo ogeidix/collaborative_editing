@@ -58,16 +58,20 @@ module CollaborativeEditing
         end
 
         def request_relocate(username, position)
+            broadcast :action => 'control', :user => username, :message => 'request relocate pos: ( ' + position.node + ',' + position.y.to_s + '), @' + position.version.to_s;
             if (@document.version != position.version)
                 puts "relocate denied: wrong versin"
+                broadcast :action => 'control', :user => username, :message => 'request relocate denied'
                 return false 
             end
             @clients.each { |client| 
                 if (client.position == position && client.username != username)
                     puts "relocate denied: conflic position"
+                    broadcast :action => 'control', :user => username, :message => 'request relocate denied'
                     return false
                 end
             }
+            broadcast :action => 'control', :user => username, :message => 'request relocate granted'
             return true
         end
     end
