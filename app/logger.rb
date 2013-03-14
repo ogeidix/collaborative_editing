@@ -22,6 +22,7 @@ module CollaborativeEditing
       
     	def initialize(logfile_name, levels)
     	   @logfilename = logfile_name
+         @file_mutex  = Mutex.new
          @levels      = levels
          @DELIMITER   = " !!! "
 
@@ -67,10 +68,12 @@ module CollaborativeEditing
         end
 
         def log_to_file(message)
-          #message = Time.now.to_s + @DELIMITER + message
-          @lsn += 1
-          @logfile.puts(message)
-          @logfile.flush
+          @file_mutex.synchronize do
+            #message = Time.now.to_s + @DELIMITER + message
+            @lsn += 1
+            @logfile.puts(message)
+            @logfile.flush
+          end
         end
     end
 end
