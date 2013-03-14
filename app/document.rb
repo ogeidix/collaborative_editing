@@ -1,5 +1,8 @@
 module CollaborativeEditing
     class Document
+
+        @@operations_since_checkpoint = 0
+
         # This class represent the document
         # its purpose is to manage the content,
         # its changes and its history
@@ -48,11 +51,16 @@ module CollaborativeEditing
             @version += 1
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
             secure_change_in_logs(checksum, this_change)
+            @@operations_since_checkpoint += 1
+            if @@operations_since_checkpoint >= UPDATE_FREQUENCY
+                Application.checkpointer.schedule!
+                @@operations_since_checkpoint = 0
+            end
             # if current version number is a multiple of UPDATE_FREQUENCY, 
             # update the master file with the latest contents
-            if @version % UPDATE_FREQUENCY == 0
-                update_master checksum
-            end
+            # if @version % UPDATE_FREQUENCY == 0
+            #     update_master checksum
+            # end
         end
         
         # Bring the base copy in sync with current version of the file

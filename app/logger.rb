@@ -63,7 +63,7 @@ module CollaborativeEditing
         def log_to_stdout(message, level = 'i')
           colors = { i: BLUE, d: BROWN, r: MAGENTA, w: RED }
           color  = @levels.include?('color') ? colors[level.to_sym] : RESET_COLORS
-          puts color + "[logger] (" + level + ") " + Time.now.to_s + " " + message.to_s + RESET_COLORS
+          puts color + "(" + level + ") " + Time.now.to_s + " " + message.to_s + RESET_COLORS
         end
 
         def log_to_file(message)

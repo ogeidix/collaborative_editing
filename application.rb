@@ -8,16 +8,23 @@ require 'rexml/document'
 require 'time'
 require 'digest/md5'
 
+Thread.abort_on_exception = true
+
 module CollaborativeEditing
   class Application
 
     def self.initialize!
       Cramp::Websocket.backend = :thin
-      @logger = Logger.new 'app/collabedit.log', (ENV['LOG'] || 'info').split(',')
+      @logger       = Logger.new 'app/collabedit.log', (ENV['LOG'] || 'info').split(',')
+      @checkpointer = Checkpointer.new
     end
 
     def self.logger
       return @logger
+    end
+
+    def self.checkpointer
+      return @checkpointer
     end
 
     def self.root(path = nil)
