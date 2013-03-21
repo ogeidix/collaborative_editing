@@ -33,18 +33,22 @@ module CollaborativeEditing
                 i +=1 if(parent_node.children[n].class == REXML::Text)
                 n += 1
             end
+
+            current_node = parent_node.children[n-1]            
+            prefix = current_node.value[0, this_change.position.y]
+            suffix = current_node.value[this_change.position.y, current_node.value.length]
+            interim = ""
             
-            current_node = parent_node.children[n-1]
-            if  this_change.change[0].ord == 8
-                this_length = this_change.change.length
-                prefix  = current_node.value[0, this_change.position.y - this_length]
-                interim = ""
-            else
-                prefix  = current_node.value[0, this_change.position.y] 
+            if  this_change.verb.eql?('delete')
+                this_length = this_change.length
+                if this_change.direction.eql?('left')
+                    prefix  = current_node.value[0, this_change.position.y - this_length]
+                else 
+                    suffix = current_node.value[this_change.position.y + this_length, current_node.value.length]
+                end
+            elsif this_change.verb.eql?('insert')
                 interim = this_change.change.to_s 
             end
-
-            suffix = current_node.value[this_change.position.y, current_node.value.length]
             current_node.value = prefix + interim + suffix
             # puts "Changed node : " + current_node.value
             

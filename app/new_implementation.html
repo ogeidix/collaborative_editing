@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <script src='/js/jquery-1.9.1.min.js'></script>
+    <script src='/js/jquery.json-2.2.min.js'></script>
+    <script src='/js/rangy-core.js'></script>
+    <script src='/js/date.js'></script>
+    <script src='/js/application.js'></script>
+    
+    <script type='text/javascript'>
+      
+      $(document).ready(function() {
+        var username = window.location.hash.substr(1);
+        var filename = 'a';
+        editor = new Editor(username, filename);
+      });
+
+    </script>
+
+    <style type="text/css" media="screen">
+      #editor {
+        width: 500px;
+        height: 500px;
+        border: 1px solid black;
+      }
+
+    </style>
+
+  </head>
+  <body>
+    <div id="editor" contenteditable="true">
+    </div>
+  </body>
+</html>

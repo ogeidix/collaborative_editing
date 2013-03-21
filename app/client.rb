@@ -31,20 +31,27 @@ module CollaborativeEditing
         when 'message'
           @room.talk @username, msg[:message]
           
-        when 'change'
+        when 'insert'
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
-          change   = Change.new(@username, position, msg[:changes])
+          change   = Insertion.new(@username, position, msg[:changes])
           if @room.request_change(self, change)
             @position = change.new_position(@room.document.version)
-          else
-            if change.deletion?
-              send_to_browser action: 'lock', about: 'change', granted: false
-            end
+          #else
+          #  if change.deletion?
+          #    send_to_browser action: 'lock', about: 'change', granted: false
+          #  end
+          end       
+        
+        when 'delete'
+          position = Position.new(msg[:node], msg[:y].to_i, msg[:version].to_i)
+          change = Deletion.new(@username, position, msg[:direction], msg[:length].to_i)
+          if @room.request_change(self, change)
+            @position = change.new_position(@room.document.version)
           end
-            
+
         when 'relocate'
           new_position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
-          if (@room.request_relocate @username, new_position)
+          if (@room.request_relocate(@username, new_position))
             @position = new_position  
             send_to_browser action: 'lock', about: 'relocate', granted: true
           else

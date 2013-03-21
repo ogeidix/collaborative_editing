@@ -1,18 +1,18 @@
 module CollaborativeEditing
-    class Change 
+    class Insertion 
 
-        attr_reader :username, :position, :change
+        attr_reader :username, :position, :change, :verb
 
         def initialize (author, position, new_change)
             @username = author
             @position = position
             @change = new_change
-            @type = 'add'
+            @verb = 'insert'
         end
 
         def new_position(document_version)
             new_y = @position.y + @change.length
-            return Position.new(position.node, new_y, document_version)
+            return Position.new(@position.node, new_y, document_version)
         end
 
         def deletion?
@@ -33,7 +33,7 @@ module CollaborativeEditing
         end
 
         def to_hash
-            return { :user => @username, :position => position.to_hash, :type => @type, :content => @change}
+            return { :user => @username, :position => position.to_hash, :type => @verb, :content => @change}
         end
     end
 end

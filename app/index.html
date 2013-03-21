@@ -1,16 +1,15 @@
 <html>
-<head>
-<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
-<script src='http://jquery-json.googlecode.com/files/jquery.json-2.2.min.js'></script>
-<script src='http://datejs.googlecode.com/svn/trunk/build/date.js'></script>
-<script src='/js/rangy-core.js'></script>
+  <head>
+    <script src='/js/jquery-1.9.1.min.js'></script>
+    <script src='/js/jquery.json-2.2.min.js'></script>
+    <script src='/js/rangy-core.js'></script>
+    <script src='/js/date.js'></script>
 <script>
 
 var documentVersion = 3;
 
 function generateXPath(element) {
-    if (element.id=='usergenerated' )
-        return '/';
+    if (element.id=='usergenerated' ) { return '/'; }
     var ix= 0;
     var siblings= element.parentNode.childNodes;
     for (var i= 0; i<siblings.length; i++) {
@@ -51,7 +50,6 @@ function getelement(root, str_path){
             //}
             if ( child.nodeName.toLowerCase() === key ){
                 if (ix == offset){
-                    console.log('child:' + child);
                     var next = str_path.indexOf(']');
                     if (next < 0){
                         return child;
@@ -142,13 +140,12 @@ $(document).ready(function(){
         $('#editor').html(obj['content']);
         documentVersion = obj['version'] ;
         $('#version').val(documentVersion);
-      } else if (action == 'change') {
+      } else if (action == 'insert') {
         var username = obj['user'];
         if (username != name){
             var changeroot= document.getElementById('usergenerated');
             var offset = parseInt(obj['y']);
             var node = getelement(changeroot, obj['node']);
-            console.log("node is:" +node);
             var edit = obj['changes'];
             node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
             documentVersion = obj['version'] ;
@@ -158,9 +155,7 @@ $(document).ready(function(){
             $('#version').val(documentVersion);
         }
       } else if (action == 'lock'){
-            console.log("granted as " + obj['granted']);
             if (obj['granted']){
-              console.log("inside");
               $('#editor').attr("contenteditable",true);
               waiting=false;
             }else if (obj['about']=='relocate'){
@@ -219,7 +214,7 @@ $(document).ready(function(){
       ws.send(json);
     });
 
-  $('#editor').bind('click', function() {
+  $('#editor').bind('click', function(evt) {
       if (waiting){
           return false;
       }
@@ -230,11 +225,11 @@ $(document).ready(function(){
       $('#relocate_node').val(node);
       $('#change_y').val(offset);
       $('#relocate_y').val(offset);
-      console.log("Click In: " + node + ", " + offset + " @ v"+documentVersion);
       var json = JSON.stringify({"action":"relocate", "node": node, "y": offset, "version": documentVersion});
       ws.send(json);
       $('#editor').attr("contenteditable",false);
       waiting=true;
+
   }); 
 
   $('#editor').bind('keypress', function(event) {
@@ -244,13 +239,12 @@ $(document).ready(function(){
       selection = rangy.getSelection();
       node = generateXPath(selection.anchorNode);
       offset = selection.anchorOffset;
-      console.log("keypress" + event.charCode);
       edit = String.fromCharCode(event.charCode);
       if ( event.keyCode == 13){
         edit = "\n";
       }
       $('#changes').val(edit);
-      var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
+      var json = JSON.stringify({"action":"insert", "node": node, "y": offset, "version": documentVersion, "changes": edit});
       ws.send(json);
   });
 
@@ -266,7 +260,7 @@ $(document).ready(function(){
       offset = selection.anchorOffset;
       edit = "\b";
       $('#changes').val(edit);
-      var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
+      var json = JSON.stringify({"action":"insert", "node": node, "y": offset, "version": documentVersion, "changes": edit});
       ws.send(json);
       $('#editor').attr("contenteditable",false);
       waiting=true;

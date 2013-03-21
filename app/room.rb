@@ -36,12 +36,11 @@ module CollaborativeEditing
         def request_change(client, change)
             Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.change}")
 
-            # Check coherence of position
             if (client.position != change.position)
                 Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: position incoherent")
                 return false
             end
-
+#
             # Check for conflict
             @clients.each { |client|
                 next if client.username == change.username
@@ -53,19 +52,28 @@ module CollaborativeEditing
             }
 
             @document.execute_change change
-            broadcast action:  'change',
-                      user:    change.username,
-                      node:    change.position.node,
-                      y:       change.position.y,
-                      version: document.version,
-                      changes: change.change
+            h = {   action:  change.verb,
+                    user:    change.username,
+                    node:    change.position.node,
+                    y:       change.position.y,
+                    version: document.version 
+                }
+                      
+            if change.verb.eql?('insert')
+                h[:changes] = change.change
+            elsif change.verb.eql?('delete') 
+                h[:direction] = change.direction
+                h[:length] = change.length
+            end
+
+            broadcast h     
 
             Application.logger.debug format_log("request change - user: #{change.username} status: granted")
             return true
         end
 
         def request_relocate(username, position)
-            Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")
+            Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")      
             if (@document.version != position.version or conflict_with_others(username, position))
                 Application.logger.debug format_log("request relocate - user: #{username} status: denied")
                 return false 
@@ -86,7 +94,7 @@ module CollaborativeEditing
 
             def conflict_with_others(username, position)
                 @clients.each { |client| 
-                    next         if client.username == username
+                    next        if client.username == username
                     return true if client.position == position
                 }
                 return false
