@@ -30,6 +30,7 @@ module CollaborativeEditing
               @lsn = %x{wc -l < "#{@logfilename}"}.to_i
            else 
               @lsn = 0
+              FileUtils.touch @logfilename
            end
 
          @logfile = File.open(@logfilename, "a")      

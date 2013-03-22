@@ -26,7 +26,7 @@ module CollaborativeEditing
 
         def join(username)
             Application.logger.info format_log("#{username} joined the file")
-            broadcast :action => 'control', :user => username, :message => 'joined the file ' + document.name
+            broadcast :action => 'control', :user => username, :message => 'joined the file ' + document.filename
         end
 
         def talk(username, message)
@@ -98,7 +98,7 @@ module CollaborativeEditing
             end
 
             def format_log(message)
-                return "[room] " + @document.name.to_s + " v" + document.version.to_s + " - " + message
+                return "[room] " + @document.filename.to_s + " v" + document.version.to_s + " - " + message
             end
 
             def conflict_with_others(username, position)
