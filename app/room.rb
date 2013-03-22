@@ -51,7 +51,8 @@ module CollaborativeEditing
                 end
             }
 
-            @document.execute_change change
+
+            @document.execute_change(change, true)
             h = {   action:  change.verb,
                     user:    change.username,
                     node:    change.position.node,
@@ -67,6 +68,7 @@ module CollaborativeEditing
             end
 
             broadcast h     
+
 
             Application.logger.debug format_log("request change - user: #{change.username} status: granted")
 
