@@ -34,8 +34,8 @@ module CollaborativeEditing
 
     def self.routes
       @routes ||=  HttpRouter.new do
-        add('/').static(Application.root('app/index.html'))
-        add('/new').static(Application.root('app/new_implementation.html'))
+        add('/old').static(Application.root('app/index.html'))
+        add('/').static(Application.root('app/new_implementation.html'))
         get('/client/:document').to(Client)
         add('/js/rangy-core.js').static(Application.root('app/js/rangy-core.js'))
         add('/js/jquery-1.9.1.min.js').static(Application.root('app/js/jquery-1.9.1.min.js'))

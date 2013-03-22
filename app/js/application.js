@@ -25,8 +25,8 @@ Socket = (function() {
     var obj = $.evalJSON(evt.data);
     if (typeof(obj) != 'object') { return }
     switch(obj['action']) {
-      case 'message'  : break; //chat event
-      case 'control'  : break; //chat event
+      case 'message'  : this.handler.chat_message(obj); break;
+      case 'control'  : this.handler.chat_control(obj); break;
       case 'loadfile' : this.handler.apply_load(obj); break;
       case 'insert'   : this.handler.apply_insert(obj); break;
       case 'delete'   : this.handler.apply_delete(obj); break;
@@ -88,8 +88,50 @@ Editor = (function() {
       key = evt.keyCode;
       if(key == 13) { return false } // disable enter key
     });
+
+    $('#channel form').submit(function(event) {
+      event.preventDefault();
+      var input = $(this).find(':input');
+      var msg = input.val();
+      _this.socket.connection.send($.toJSON({ action: 'message', message: msg }));
+      input.val('');
+    });
+
   }
   
+
+  Editor.prototype.chat_message = function(obj) {
+        var container = $('div#msgs');
+        var struct = container.find('li.' + 'message' + ':first');
+        var msg = struct.clone();
+        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
+        var matches;
+        if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
+          msg.find('.user').text(obj['user'] + ' ' + matches[1]);
+          msg.find('.user').css('font-weight', 'bold');
+        } else {
+          msg.find('.user').text(obj['user']);
+          msg.find('.message').text(': ' + obj['message']);
+        }
+        if (obj['user'] == this.username) msg.find('.user').addClass('self');
+        container.find('ul').append(msg.show());
+        container.scrollTop(container.find('ul').innerHeight());
+  }
+
+
+  Editor.prototype.chat_control = function(obj) {
+            var container = $('div#msgs');
+        var struct = container.find('li.' + 'control' + ':first');
+        var msg = struct.clone();
+        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
+        msg.find('.user').text(obj['user']);
+        msg.find('.message').text(obj['message']);
+        msg.addClass('control');
+        if (obj['user'] == this.username) msg.find('.user').addClass('self');
+        container.find('ul').append(msg.show());
+        container.scrollTop(container.find('ul').innerHeight());
+  }
+
   Editor.prototype.apply_load = function(obj) {
     this.editor.html(obj['content']);
     this.documentVersion = obj['version'];
