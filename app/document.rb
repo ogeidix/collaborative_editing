@@ -1,18 +1,29 @@
 module CollaborativeEditing
     class Document
 
-        @@operations_since_checkpoint = 0
-
         # This class represent the document
         # its purpose is to manage the content,
         # its changes and its history
 
-        UPDATE_FREQUENCY = 5        
+        @@operations_since_checkpoint = 0
+        @@UPDATE_FREQUENCY = 5        
         attr_reader :name, :version, :rexml_doc
+        
+        def operations_since_checkpoint
+          @@operations_since_checkpoint
+        end
+
+        def reset_operations_since_checkpoint
+          @@operations_since_checkpoint = 0
+        end
+
+        def UPDATE_FREQUENCY
+          @@UPDATE_FREQUENCY
+        end
         
         def initialize(name)
             @name = name
-            @version = 0     
+            @version = 0
             
             # server maintains all files under $COLLAB_EDITOR_HOME/data/
             # if file exists, then send its contents, else create a new file with default content
@@ -56,10 +67,6 @@ module CollaborativeEditing
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
             secure_change_in_logs(checksum, this_change)
             @@operations_since_checkpoint += 1
-            if @@operations_since_checkpoint >= UPDATE_FREQUENCY
-                Application.checkpointer.schedule!
-                @@operations_since_checkpoint = 0
-            end
             # if current version number is a multiple of UPDATE_FREQUENCY, 
             # update the master file with the latest contents
             # if @version % UPDATE_FREQUENCY == 0
@@ -75,10 +82,10 @@ module CollaborativeEditing
             
             FileUtils.cp("data/" + name, "data/" + name + ".swp") 
             File.open("data/" + name, 'w') {|f| f.write(@rexml_doc) }
-            log_checkpoint(checksum, "base")
+#            log_checkpoint(checksum, "base")
             
             FileUtils.cp("data/" + name, "data/" + name + ".swp")
-            log_checkpoint(checksum, "swp")
+#            log_checkpoint(checksum, "swp")
         end
         
         def secure_change_in_logs(checksum, change)
