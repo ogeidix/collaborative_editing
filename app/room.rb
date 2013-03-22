@@ -61,6 +61,15 @@ module CollaborativeEditing
                       changes: change.change
 
             Application.logger.debug format_log("request change - user: #{change.username} status: granted")
+
+            if @document.operations_since_checkpoint >= @document.UPDATE_FREQUENCY
+              @document.reset_operations_since_checkpoint
+              @@rooms.values.each do |room|
+                  checksum = Digest::MD5.hexdigest(room.document.rexml_doc.to_s)
+                  room.document.update_master checksum
+              end
+              Application.checkpointer.schedule!
+            end
             return true
         end
 

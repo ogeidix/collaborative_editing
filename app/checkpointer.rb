@@ -16,7 +16,7 @@ module CollaborativeEditing
 			@mutex.synchronize {
 				@scheduled = true
 				@resource.signal
-			}    		
+			}
     	end
 
     	private
