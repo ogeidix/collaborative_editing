@@ -166,6 +166,7 @@ $(document).ready(function(){
             }else if (obj['about']=='relocate'){
               window.alert("conflict position! please choose another position");
               $('#editor').attr("contenteditable",true);
+              $('input#message').focus();
               waiting=false;
             }
       }
