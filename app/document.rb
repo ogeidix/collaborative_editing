@@ -8,7 +8,7 @@ module CollaborativeEditing
         @@operations_since_checkpoint = 0
         @@UPDATE_FREQUENCY = 5        
 
-        attr_reader :name, :version, :rexml_doc
+        attr_reader :filename, :version, :rexml_doc
         
         def operations_since_checkpoint
           @@operations_since_checkpoint
@@ -22,20 +22,20 @@ module CollaborativeEditing
           @@UPDATE_FREQUENCY
         end
         
-        def initialize(name)
-            @name = name
+        def initialize(filename)
+            @filename = filename
             @version = 0
             
             # server maintains all files under $COLLAB_EDITOR_HOME/data/
             # if file does not exists, create a new file with default content
-            if !File.file?("data/" + name)
+            if !File.file?("data/" + filename)
                 # replicate the default file
-                FileUtils.cp("app/default.file", "data/" + name)
-                @rexml_doc = REXML::Document.new(File.new("data/" + name))
+                FileUtils.cp("app/default.file", "data/" + filename)
+                @rexml_doc = REXML::Document.new(File.new("data/" + filename))
             else 
                 # if the file already exists, then
                 # perform recovery using logs before returning the file to the user
-                @rexml_doc = REXML::Document.new(File.new("data/" + name))
+                @rexml_doc = REXML::Document.new(File.new("data/" + filename))
                 dirty = false
                 @version = @rexml_doc[0][1].string.split[2].to_i
                 checksum = @rexml_doc[0][3].string
@@ -48,12 +48,13 @@ module CollaborativeEditing
 
                 while counter.to_i <= sizeOfLogfile.to_i
                    currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
-                   splits = currLine.split(" !!! ")
+                   splits = currLine.split(Application.logger.DELIMITER)
                    
-                   if splits[0] == name   # if the log corresponds to the same file
-                      position      = Position.new(splits[5], splits[6].to_i , splits[1].to_i - 1)
-                      logged_change = Change.new(splits[4], position, splits[7])
-                      execute_change(logged_change) 
+                   if splits[0] == filename   # if the log corresponds to the same file
+                      position      = Position.new(splits[5], splits[6].to_i , splits[1].to_i)
+                      change_done = splits[7].tr("\n","")
+                      logged_change = Change.new(splits[4], position, change_done)
+                      execute_change(logged_change)
                       puts(currLine)
                       dirty = true
                    end
@@ -106,16 +107,16 @@ module CollaborativeEditing
             @rexml_doc[1][3].string = "md5_checksum = " + checksum
             @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + 1).to_s
             
-            FileUtils.cp("data/" + name, "data/" + name + ".swp") 
-            File.open("data/" + name, 'w') {|f| f.write(@rexml_doc) }
+            FileUtils.cp("data/" + filename, "data/" + filename + ".swp") 
+            File.open("data/" + filename, 'w') {|f| f.write(@rexml_doc) }
 #            log_checkpoint(checksum, "base")
             
-            FileUtils.cp("data/" + name, "data/" + name + ".swp")
+            FileUtils.cp("data/" + filename, "data/" + filename + ".swp")
 #            log_checkpoint(checksum, "swp")
         end
         
         def secure_change_in_logs(checksum, this_change)
-            Application.logger.recovery @name.to_s + Application.logger.DELIMITER \
+            Application.logger.recovery @filename.to_s + Application.logger.DELIMITER \
                 + @version.to_s                  + Application.logger.DELIMITER \
                 + checksum                       + Application.logger.DELIMITER \
                 + "change_file"                  + Application.logger.DELIMITER \
@@ -126,7 +127,7 @@ module CollaborativeEditing
         end
 
         def log_checkpoint(checksum, type)
-            Application.logger.recovery name + Application.logger.DELIMITER \
+            Application.logger.recovery filename + Application.logger.DELIMITER \
                              + @version.to_s + Application.logger.DELIMITER \
                              + checksum      + Application.logger.DELIMITER \
                              + "check_point" + Application.logger.DELIMITER \
