@@ -8,10 +8,25 @@ module CollaborativeEditing
             @position = position
             @change = new_change
             @type = 'add'
+            if deletion? 
+                @type = 'del'
+            end
         end
 
         def new_position(document_version)
-            new_y = @position.y + @change.length
+            if deletion?
+                new_y = @position.y - @change.length
+                # if is zero 
+                # check delete node
+                # at now, we can not delete the node, 
+                # make it jump to the previous node
+                # still a lot of work. 
+                if new_y < 0
+                    new_y =0
+                end
+            else
+                new_y = @position.y + @change.length
+            end
             return Position.new(position.node, new_y, document_version)
         end
 
@@ -29,6 +44,11 @@ module CollaborativeEditing
             # if change is DELETE
             #    y = change,position.y- change.size 
             #    ....
+            if deletion?
+                Application.logger.debug format_log("change.delete conflict")
+                nextpos = new_position(position.version)
+                return true if nextpos == position
+            end
             return false
         end
 
