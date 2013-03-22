@@ -160,6 +160,7 @@ $(document).ready(function(){
               waiting=false;
             }else if (obj['about']=='relocate'){
               window.alert("conflict position! please choose another position");
+              // need to make it clickable but not editable
               $('#editor').attr("contenteditable",true);
               waiting=false;
             }
@@ -260,7 +261,7 @@ $(document).ready(function(){
       offset = selection.anchorOffset;
       edit = "\b";
       $('#changes').val(edit);
-      var json = JSON.stringify({"action":"insert", "node": node, "y": offset, "version": documentVersion, "changes": edit});
+      var json = JSON.stringify({"action":"delete", "node": node, "y": offset, "version": documentVersion});
       ws.send(json);
       $('#editor').attr("contenteditable",false);
       waiting=true;
