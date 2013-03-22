@@ -54,7 +54,7 @@ module CollaborativeEditing
                       position      = Position.new(splits[5], splits[6].to_i , splits[1].to_i)
                       change_done = splits[7].tr("\n","")
                       logged_change = Change.new(splits[4], position, change_done)
-                      execute_change(logged_change)
+                      execute_change(logged_change, false)
                       puts(currLine)
                       dirty = true
                    end
@@ -65,13 +65,12 @@ module CollaborativeEditing
                 # the recovery again
                 if dirty == true
                     checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
-                    update_master(checksum)
+                    update_master(checksum, 0)
                 end
             end
         end
     
-        def execute_change(this_change)
-#            puts "Parent: #{this_change.position.parent_node} - Child Num. #{this_change.position.child_number}"
+        def execute_change(this_change, isLogged)
             parent_node = REXML::XPath.first @rexml_doc, this_change.position.parent_node
             i = 0
             n = 0
@@ -93,25 +92,27 @@ module CollaborativeEditing
 
             suffix = current_node.value[this_change.position.y, current_node.value.length]
             current_node.value = prefix + interim + suffix
-            # puts "Changed node : " + current_node.value
             
             @version += 1
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
-            secure_change_in_logs(checksum, this_change)
-            @@operations_since_checkpoint += 1
+            
+            if isLogged == true
+                secure_change_in_logs(checksum, this_change)
+                @@operations_since_checkpoint += 1
+            end
         end
         
         # Bring the base copy in sync with current version of the file
-        def update_master(checksum)
+        def update_master(checksum, lsn_increment = 1)
             @rexml_doc[1][1].string = "version = " + @version.to_s
             @rexml_doc[1][3].string = "md5_checksum = " + checksum
-            @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + 1).to_s
+            @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + lsn_increment).to_s
             
-            FileUtils.cp("data/" + filename, "data/" + filename + ".swp") 
+#            FileUtils.cp("data/" + filename, "data/" + filename + ".swp") 
             File.open("data/" + filename, 'w') {|f| f.write(@rexml_doc) }
 #            log_checkpoint(checksum, "base")
             
-            FileUtils.cp("data/" + filename, "data/" + filename + ".swp")
+#            FileUtils.cp("data/" + filename, "data/" + filename + ".swp")
 #            log_checkpoint(checksum, "swp")
         end
         
