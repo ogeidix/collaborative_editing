@@ -7,6 +7,7 @@ module CollaborativeEditing
 
         @@operations_since_checkpoint = 0
         @@UPDATE_FREQUENCY = 5        
+
         attr_reader :name, :version, :rexml_doc
         
         def operations_since_checkpoint
@@ -26,12 +27,46 @@ module CollaborativeEditing
             @version = 0
             
             # server maintains all files under $COLLAB_EDITOR_HOME/data/
-            # if file exists, then send its contents, else create a new file with default content
-            if !File.file?("data/" + name) # + ".ver." + @version.to_s)
+            # if file does not exists, create a new file with default content
+            if !File.file?("data/" + name)
                 # replicate the default file
-                FileUtils.cp("app/default.file", "data/" + name) # + ".ver." + @version.to_s) 
+                FileUtils.cp("app/default.file", "data/" + name)
+                @rexml_doc = REXML::Document.new(File.new("data/" + name))
+            else 
+                # if the file already exists, then
+                # perform recovery using logs before returning the file to the user
+                @rexml_doc = REXML::Document.new(File.new("data/" + name))
+                dirty = false
+                @version = @rexml_doc[0][1].string.split[2].to_i
+                checksum = @rexml_doc[0][3].string
+                lastLSN = @rexml_doc[0][5].string.split[2].to_i
+                sizeOfLogfile = %x{wc -l "app/collabedit.log"}.split.first.to_i
+
+                # read the log file from this LSN and apply all the changes 
+                # logged for this file.
+                counter = lastLSN.to_i
+
+                while counter.to_i <= sizeOfLogfile.to_i
+                   currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
+                   splits = currLine.split(" !!! ")
+                   
+                   if splits[0] == name   # if the log corresponds to the same file
+                      position      = Position.new(splits[5], splits[6].to_i , splits[1].to_i - 1)
+                      logged_change = Change.new(splits[4], position, splits[7])
+                      execute_change(logged_change) 
+                      puts(currLine)
+                      dirty = true
+                   end
+                   counter +=1
+                end
+                
+                # write back this document to disk so that we need not perform
+                # the recovery again
+                if dirty == true
+                    checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
+                    update_master(checksum)
+                end
             end
-            @rexml_doc = REXML::Document.new(File.new("data/" + name)) # + ".ver." + @version.to_s))          
         end
     
         def execute_change(this_change)
@@ -63,11 +98,6 @@ module CollaborativeEditing
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
             secure_change_in_logs(checksum, this_change)
             @@operations_since_checkpoint += 1
-            # if current version number is a multiple of UPDATE_FREQUENCY, 
-            # update the master file with the latest contents
-            # if @version % UPDATE_FREQUENCY == 0
-            #     update_master checksum
-            # end
         end
         
         # Bring the base copy in sync with current version of the file
@@ -84,17 +114,17 @@ module CollaborativeEditing
 #            log_checkpoint(checksum, "swp")
         end
         
-        def secure_change_in_logs(checksum, change)
+        def secure_change_in_logs(checksum, this_change)
             Application.logger.recovery @name.to_s + Application.logger.DELIMITER \
-                + @version.to_s             + Application.logger.DELIMITER \
-                + checksum                  + Application.logger.DELIMITER \
-                + "change_file"             + Application.logger.DELIMITER \
-                + change.username.to_s      + Application.logger.DELIMITER \
-                + change.position.node.to_s + Application.logger.DELIMITER \
-                + change.position.y.to_s
-                #+ " !$! " + msg[:changes]
+                + @version.to_s                  + Application.logger.DELIMITER \
+                + checksum                       + Application.logger.DELIMITER \
+                + "change_file"                  + Application.logger.DELIMITER \
+                + this_change.username.to_s      + Application.logger.DELIMITER \
+                + this_change.position.node.to_s + Application.logger.DELIMITER \
+                + this_change.position.y.to_s    + Application.logger.DELIMITER \
+                + this_change.change
         end
-                
+
         def log_checkpoint(checksum, type)
             Application.logger.recovery name + Application.logger.DELIMITER \
                              + @version.to_s + Application.logger.DELIMITER \

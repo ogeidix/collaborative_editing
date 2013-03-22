@@ -18,7 +18,7 @@ module CollaborativeEditing
       BLINK_ON       = "\033[5m"
       BLINK_OFF      = "\033[25m"
     
-      attr_reader :lsn, :DELIMITER
+      attr_reader :lsn, :DELIMITER, :logfilename
       
     	def initialize(logfile_name, levels)
     	   @logfilename = logfile_name
@@ -26,13 +26,10 @@ module CollaborativeEditing
          @levels      = levels
          @DELIMITER   = " !!! "
 
-    	     # TODO: before doing anything, apply recovery from the existing log file
-           # delete an existing log file from older revision
            if File.file?(@logfilename)
-              File.delete(@logfilename)
-              @lsn = 0
-           else 
               @lsn = %x{wc -l < "#{@logfilename}"}.to_i
+           else 
+              @lsn = 0
            end
 
          @logfile = File.open(@logfilename, "a")      
