@@ -163,8 +163,21 @@ $(document).ready(function(){
               console.log("inside");
               $('#editor').attr("contenteditable",true);
               waiting=false;
-            }else if (obj['about']=='relocate'){
-              window.alert("conflict position! please choose another position");
+              if (obj['about'=='change'){
+                var changeroot= document.getElementById('usergenerated');
+                var offset = parseInt(obj['offset']);
+                var node = getelement(changeroot, obj['node']);
+                node.nodeValue = node.nodeValue.substring(0, offset - 1) + node.nodeValue.substr(offset);
+                documentVersion = obj['version'] ;
+                $('#version').val(documentVersion);
+              }
+
+            }else {
+              if (obj['about']=='relocate'){
+                window.alert("conflict position! please choose another position");
+              }else if (obj['about']=='change'){
+                window.alert("conflict delete! please choose another position");
+              }
               $('#editor').attr("contenteditable",true);
               $('input#message').focus();
               waiting=false;
@@ -257,7 +270,7 @@ $(document).ready(function(){
 
   $('#editor').bind('keydown', function(event) {
       if(waiting){
-          return false;
+          return true;
       }
       if (event.keyCode != 8){
           return true;
