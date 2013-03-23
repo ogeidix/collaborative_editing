@@ -36,10 +36,10 @@ module CollaborativeEditing
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           change   = Change.new(@username, position, msg[:changes])
           if @room.request_change(self, change)
+              @position = change.new_position(@room.document.version)
               if change.deletion?
-                 send_to_browser { :action => 'lock', :about => 'change', :granted => true }.merge(@position.to_hash)
+                 send_to_browser ({ :action => 'lock', :about => 'change', :granted => true , :node => position.node, :offset => position.y, :version => @room.document.version })
               end
-            @position = change.new_position(@room.document.version)
             
           else
             if change.deletion?

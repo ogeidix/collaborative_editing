@@ -83,6 +83,7 @@ module CollaborativeEditing
             
             current_node = parent_node.children[n-1]
             if  this_change.change[0].ord == 8
+                Application.logger.debug "delete in node"
                 this_length = this_change.change.length
                 prefix  = current_node.value[0, this_change.position.y - this_length]
                 interim = ""

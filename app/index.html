@@ -64,6 +64,17 @@ function getelement(root, str_path){
     }
 }
 
+function insertNodeAtCaret(node) {
+        var sel = rangy.getSelection();
+        if (sel.rangeCount) {
+          var range = sel.getRangeAt(0);
+          range.collapse(false);
+          range.insertNode(node);
+          range.collapseAfter(node);
+          sel.setSingleRange(range);
+        }
+}
+
 var ws;
 
 $(document).ready(function(){
@@ -95,6 +106,7 @@ $(document).ready(function(){
   function join(name) {
     var host = window.location.host.split(':')[0];
     var waiting = false;
+    var caret;
 
     var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
     ws = new SocketKlass('ws://' + window.location.hostname + ':3000/client/'+$('#filename').val());
@@ -150,7 +162,11 @@ $(document).ready(function(){
             var node = getelement(changeroot, obj['node']);
             console.log("node is:" +node);
             var edit = obj['changes'];
-            node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
+            if ( edit == '\b'){
+                node.nodeValue = node.nodeValue.substring(0, offset - 1) + node.nodeValue.substr(offset);
+            }else{
+               node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
+            }
             documentVersion = obj['version'] ;
             $('#version').val(documentVersion);
         }else{
@@ -163,13 +179,14 @@ $(document).ready(function(){
               console.log("inside");
               $('#editor').attr("contenteditable",true);
               waiting=false;
-              if (obj['about'=='change'){
+              if (obj['about']=='change'){
                 var changeroot= document.getElementById('usergenerated');
                 var offset = parseInt(obj['offset']);
                 var node = getelement(changeroot, obj['node']);
                 node.nodeValue = node.nodeValue.substring(0, offset - 1) + node.nodeValue.substr(offset);
                 documentVersion = obj['version'] ;
                 $('#version').val(documentVersion);
+                $('input#message').focus();
               }
 
             }else {
@@ -282,6 +299,7 @@ $(document).ready(function(){
       $('#changes').val(edit);
       var json = JSON.stringify({"action":"change", "node": node, "y": offset, "version": documentVersion, "changes": edit});
       ws.send(json);
+      //caret = selection.getCaret();
       $('#editor').attr("contenteditable",false);
       waiting=true;
   });
