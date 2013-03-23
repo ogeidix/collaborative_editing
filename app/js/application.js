@@ -134,7 +134,7 @@ Editor = (function() {
 
   Editor.prototype.apply_load = function(obj) {
     this.editor.html(obj['content']);
-    this.documentVersion = obj['version'];
+    this.document_version = obj['version'];
   } 
 
   Editor.prototype.apply_insert = function(obj) {

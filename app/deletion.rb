@@ -18,5 +18,9 @@ module CollaborativeEditing
         return Position.new(@position.node, new_y, document_version)
       end
 
+      def change
+        return "\n"*@length
+      end
+
     end
 end
