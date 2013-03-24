@@ -15,6 +15,7 @@ var components =
  '/lib/rangy-core.js',
 
  '/socket.js',
+ '/chat.js',
  '/editor.js',
  '/xpathhelper.js'];
 

@@ -8,10 +8,11 @@
 
 Socket = (function() {
 
-  function Socket(url, handler) {
+  function Socket(url, editor, chat) {
     var socketClass = 'MozWebSocket' in window ? MozWebSocket : WebSocket;
     this.connection = new socketClass(url);
-    this.handler = handler; 
+    this.editor = editor; 
+    this.chat   = chat; 
     _this = this;         
     this.connection.onmessage = function(evt) { _this.receive(evt) }
     $(window).on('beforeunload', function() { _this.close() });
@@ -27,12 +28,12 @@ Socket = (function() {
     var obj = $.evalJSON(evt.data);
     if (typeof(obj) != 'object') { return }
     switch(obj['action']) {
-      case 'message'  : this.handler.chat_message(obj); break;
-      case 'control'  : this.handler.chat_control(obj); break;
-      case 'loadfile' : this.handler.apply_load(obj); break;
-      case 'insert'   : this.handler.apply_insert(obj); break;
-      case 'delete'   : this.handler.apply_delete(obj); break;
-      case 'lock'     : this.handler.unlock(obj); break;
+      case 'message'  : this.chat.receive_message(obj); break;
+      case 'control'  : this.chat.receive_control(obj); break;
+      case 'loadfile' : this.editor.apply_load(obj); break;
+      case 'insert'   : this.editor.apply_insert(obj); break;
+      case 'delete'   : this.editor.apply_delete(obj); break;
+      case 'lock'     : this.editor.unlock(obj); break;
     }
   }
 

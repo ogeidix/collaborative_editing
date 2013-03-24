@@ -28,13 +28,14 @@ Editor = (function() {
     url = 'ws://' + window.location.host + '/client/'+ filename;    
 
     var _this = this;
-    
-    this.socket = new Socket(url, _this);
+    this.chat   = new Chat(username);
+    this.socket = new Socket(url, _this, _this.chat);
+
     this.socket.connection.onopen = function() {
       _this.socket.send({ action: 'join', user: username });
     }
-
     
+
     // events handlers
       
     this.editor.on('mousedown', function() {      if(_this.disable('?')) { return false } });
@@ -51,49 +52,8 @@ Editor = (function() {
       if(key == 8 || key == 46) { _this.send_delete(key) } // backspace and canc
     });
 
-          $('#channel form').submit(function(event) {
-        event.preventDefault();
-        var input = $(this).find(':input');
-        var msg = input.val();
-        editor.socket.connection.send($.toJSON({ action: 'message', message: msg }));
-        input.val('');
-      });
-    
   }
   
-
-  Editor.prototype.chat_message = function(obj) {
-        var container = $('div#msgs');
-        var struct = container.find('li.' + 'message' + ':first');
-        var msg = struct.clone();
-        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
-        var matches;
-        if (matches = obj['message'].match(/^\s*[\/\\]me\s(.*)/)) {
-          msg.find('.user').text(obj['user'] + ' ' + matches[1]);
-          msg.find('.user').css('font-weight', 'bold');
-        } else {
-          msg.find('.user').text(obj['user']);
-          msg.find('.message').text(': ' + obj['message']);
-        }
-        if (obj['user'] == this.username) msg.find('.user').addClass('self');
-        container.find('ul').append(msg.show());
-        container.scrollTop(container.find('ul').innerHeight());
-  }
-
-
-  Editor.prototype.chat_control = function(obj) {
-            var container = $('div#msgs');
-        var struct = container.find('li.' + 'control' + ':first');
-        var msg = struct.clone();
-        msg.find('.time').text((new Date()).toString("HH:mm:ss"));
-        msg.find('.user').text(obj['user']);
-        msg.find('.message').text(obj['message']);
-        msg.addClass('control');
-        if (obj['user'] == this.username) msg.find('.user').addClass('self');
-        container.find('ul').append(msg.show());
-        container.scrollTop(container.find('ul').innerHeight());
-  }
-
   Editor.prototype.apply_load = function(obj) {
     this.editor.html(obj['content']);
     this.document_version = obj['version'];
