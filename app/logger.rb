@@ -67,6 +67,8 @@ module CollaborativeEditing
 
         def log_to_file(message)
           @file_mutex.synchronize do
+            # removed timestamp as it makes the log look creepy plus its 
+            # not being used for recovery. LSN is used for that.
             #message = Time.now.to_s + @DELIMITER + message
             @lsn += 1
             @logfile.puts(message)

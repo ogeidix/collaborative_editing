@@ -52,7 +52,7 @@ module CollaborativeEditing
                 end
             }
 
-            @document.execute_change change
+            @document.execute_change(change,true)
             broadcast action:  'change',
                       user:    change.username,
                       node:    change.position.node,
