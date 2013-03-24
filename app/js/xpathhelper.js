@@ -21,8 +21,8 @@ XPathHelper = {
     }
   },
 
-  get_node_from_XPath: function(xpath, root_id) {
-    var element = $('#' + root_id);
+  get_node_from_XPath: function(xpath, parent) {
+    var element = parent;
     if (xpath == '') { return element[0] }
 
     xpath = xpath.split('/');
