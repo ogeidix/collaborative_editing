@@ -59,29 +59,18 @@ Editor = (function() {
   } 
 
   Editor.prototype.apply_insert = function(obj) {
-    this.editarea.save_position();
     this.doc.apply_insert(obj);
-    this.editarea.refresh(this.doc);
-      if(obj['node'] == this.editarea.caret.node && obj['y'] <= this.editarea.caret.offset){
-        this.editarea.caret.offset ++;
-      }
-    this.editarea.restore_position();
+    this.editarea.refresh(this.doc, obj);
   }
 
   Editor.prototype.apply_delete = function(obj) {
-    this.editarea.save_position();
     this.doc.apply_delete(obj);
-    this.editarea.refresh(this.doc);
-
-    if(obj['node'] == this.editarea.caret.node && obj['y'] <= this.editarea.caret.offset){
-        this.editarea.caret.offset --;
-      }
-    this.editarea.restore_position();
+    this.editarea.refresh(this.doc, obj);
   }
 
   Editor.prototype.send_insert = function(evt) {
     var position = this.editarea.get_position();
-    this.lock('change');
+    this.lock('insert');
     var edit = String.fromCharCode(evt.charCode);
     var json = {"action":"insert", "node": position['node'], "y": position['offset'], "version": this.doc.version, "changes": edit};
     this.socket.send(json);
@@ -89,12 +78,12 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
-    this.lock('change');
+    this.lock('delete');
     var position = this.editarea.get_position();
     var length = 1;
     var json; 
     if(key == 8) { // backspace, left-delete 
-      json = {"action":"delete", "node": position['node'], "y": position['offset'] + 1, "version": this.doc.version, "direction": "left", "length": length};
+      json = {"action":"delete", "node": position['node'], "y": position['offset'], "version": this.doc.version, "direction": "left", "length": length};
     }
     if (key == 46) { // canc, righ-delete
       var json = {"action":"delete", "node": position['node'], "y": position['offset'], "version": this.doc.version, "direction": "right", "length": length};
@@ -123,7 +112,7 @@ Editor = (function() {
     // if (about == 'change' && granted) {
     //   this.restore_position({offset: 1})
     // } else {
-      this.editarea.restore_position()
+    this.editarea.restore_position()
     // }
     if (about == this.lock_about && granted) { this.editarea.enable() }
     if (about == this.lock_about && !granted) { this.editarea.disable(); window.alert("conflict position! please choose another position") }

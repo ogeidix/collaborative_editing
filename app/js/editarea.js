@@ -57,8 +57,21 @@ Editarea = (function() {
     	return { node: node, offset: offset }          
   	}
 
-	Editarea.prototype.refresh = function(doc) {
+	Editarea.prototype.refresh = function(doc, obj) {
 		this.save_position();
+		if(obj){
+			if(obj.action=='insert'){
+				if (obj.node == this.caret.node && obj.y <= this.caret.offset){
+					this.caret.offset += obj.changes.length;
+				}
+			} else if (obj.action=='delete'){
+				if (obj.node == this.caret.node && obj.y <= this.caret.offset && obj.direction=='left'){
+					this.caret.offset -= obj.length;
+				} else if (obj.node == this.caret.node && obj.y < this.caret.offset && obj.direction=='right'){
+					this.caret.offset -= obj.length;
+				}
+			}
+		}
 		this.element.html(doc.content.clone());
 		this.restore_position();
   	}  	
