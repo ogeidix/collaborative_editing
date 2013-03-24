@@ -1,10 +1,20 @@
 Collaborative Editing
 =====================
 
-Running the application
------------------------
+To install the application
+--------------------------
 
     $ bundle install
-    $ LOG=recovery,info,debug,color bundle exec thin --timeout 0 start
+
+
+To run the application
+----------------------
+
+    $ LOG=recovery,warning,info,debug,color bundle exec thin --timeout 0 start
+
+or 
+	
+	$ ./start.sh   	
+
 
 You should now see the application running at http://0.0.0.0:3000 

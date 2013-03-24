@@ -30,17 +30,23 @@ module CollaborativeEditing
 
         when 'message'
           @room.talk @username, msg[:message]
+          send_to_browser action: 'lock', about: 'change', granted: true
           
         when 'insert'
           position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
           change   = Insertion.new(@username, position, msg[:changes])
-          if @room.request_change(self, change)
+          granted  = @room.request_change(self, change)
+          if granted
             @position = change.new_position(@room.document.version)
+          end
+          
+          send_to_browser action: 'lock', about: 'change', granted: granted
+
           #else
           #  if change.deletion?
           #    send_to_browser action: 'lock', about: 'change', granted: false
           #  end
-          end       
+                 
         
         when 'delete'
           position = Position.new(msg[:node], msg[:y].to_i, msg[:version].to_i)

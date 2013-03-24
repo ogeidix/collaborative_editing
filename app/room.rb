@@ -38,7 +38,7 @@ module CollaborativeEditing
 
             if (client.position != change.position)
                 Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: position incoherent")
-                return false
+            #    return false
             end
 #
             # Check for conflict
