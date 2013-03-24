@@ -9,12 +9,18 @@ XPathHelper = {
 
   get_XPath_from_node: function(node, root_id) {
     if (node.id == root_id) { return '/' }
+    if (node.parentNode == null) return false
     var sibling_index = 0;
     var siblings = node.parentNode.childNodes;
     for (var i= 0; i<siblings.length; i++) {
       var sibling = siblings[i];
       if (sibling === node){
-        return this.get_XPath_from_node(node.parentNode, root_id)+'/'+ node.nodeName.toLowerCase() +'['+ (sibling_index+1) +']';
+        var parent = this.get_XPath_from_node(node.parentNode, root_id);
+        if (parent) {
+          return parent +'/'+ node.nodeName.toLowerCase() +'['+ (sibling_index+1) +']';
+        } else {
+          return false;
+        }
       } else if ((sibling.nodeType === 1 || sibling.nodeType === 3) && sibling.nodeName === node.nodeName) {
           sibling_index++;
       }

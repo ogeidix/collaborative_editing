@@ -5,6 +5,7 @@
 Document = (function() {
 
 	function Document(content, version) {
+		console.log("[document.js] init");
 		this.content = $(content);
 		this.version = version;
 		this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
@@ -15,7 +16,7 @@ Document = (function() {
 	    var offset = parseInt(obj['y']);
 	    var node = XPathHelper.get_node_from_XPath(obj['node'], $(this.content[0]));
 	    node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
-	    this.document_version = obj['version'];
+	    this.version = obj['version'];
 	}
 
 	Document.prototype.apply_delete = function(obj) {
@@ -28,7 +29,7 @@ Document = (function() {
 	    } else {
 	    	node.nodeValue = node.nodeValue.substring(0, offset) + node.nodeValue.substr(offset + length);
 	    }
-	    this.document_version = obj['version']; 
+	    this.version = obj['version']; 
 	}
 
 	return Document;

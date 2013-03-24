@@ -8,12 +8,14 @@ Editarea = (function() {
 		this.element = $('#'+element_id);
 		this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
 		this.caret   = false;
+		console.log("[editarea.js] init");
 	}
 
   	Editarea.prototype.enable = function(q) {
     	if(q == '?') {
     	  	return this.element.attr("contenteditable")  == 'true';
     	} else {
+    		console.log("[editarea.js] enable editarea");
       		return this.element.attr("contenteditable",true);
     	}
   	}
@@ -22,16 +24,20 @@ Editarea = (function() {
 	    if(q == '?') { 
       		return this.element.attr("contenteditable")  == 'false';
     	} else {
+    		console.log("[editarea.js] disable editarea");
       		this.element.attr("contenteditable",false);
     	}
   	}
 
   	Editarea.prototype.save_position = function() {
     	this.caret = this.get_position();
+		console.log("[editarea.js] save_position: " + this.caret.node + ", " + this.caret.offset);
   	}
 
 
 	Editarea.prototype.restore_position = function(delta) {
+		if (!this.caret.node) { return true; }
+		console.log("[editarea.js] restore_position: " + this.caret.node + ", " + this.caret.offset);
 	    var sel   = rangy.getSelection();
 	    var range = rangy.createRange();
 	    var node = XPathHelper.get_node_from_XPath(this.caret.node, $('#'+this.root_id));
@@ -52,7 +58,9 @@ Editarea = (function() {
   	}
 
 	Editarea.prototype.refresh = function(doc) {
+		this.save_position();
 		this.element.html(doc.content.clone());
+		this.restore_position();
   	}  	
 
 	return Editarea;

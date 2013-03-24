@@ -36,14 +36,12 @@ document.addEventListener('DOMContentLoaded',function(){
       if ($('#username').val() == "" || $('#filename').val() == "") {
           window.alert("Please enter the username and filename !!");
       } else {
-
-          username = $('#username').val();
-          filename = $('#filename').val();
-          editor = new Editor(username, filename);
-          
           $('#login').hide();
           $('#application').show();
           $('input#message').focus();
+          username = $('#username').val();
+          filename = $('#filename').val();
+          editor = new Editor(username, filename);
       }
       return false;
     });

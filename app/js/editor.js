@@ -18,27 +18,25 @@
 Editor = (function() {
 
   function Editor(username, filename) {          
-    this.doc = false;
-    this.editor = $('#editor');
-    this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
-    this.document_version = 0;
+    
     this.lock_about = ''
     this.username = username;    
     this.filename = filename;
-    url = 'ws://' + window.location.host + '/client/'+ filename;    
+    url = 'ws://' + window.location.host + '/client/'+ filename;
+
+    this.doc      = false;
+    this.editarea = new Editarea('editor');
+    this.chat     = new Chat(username);
+    this.socket   = new Socket(url, this, this.chat);
 
     var _this = this;
-    this.editarea = new Editarea('editor');
-    this.chat   = new Chat(username);
-    this.socket = new Socket(url, _this, _this.chat);
-
     this.socket.connection.onopen = function() {
       _this.socket.send({ action: 'join', user: username });
     }
-    
 
     // events handlers
-      
+    this.editor = $('#editor');
+
     this.editor.on('mousedown', function() {      if(_this.editarea.disable('?')) { return false } });
 
     this.editor.on('click', function() { _this.send_relocate() });
@@ -56,21 +54,18 @@ Editor = (function() {
   }
   
   Editor.prototype.apply_load = function(obj) {
-    this.editor.html(obj['content']);
-    this.document_version = obj['version'];
     this.doc = new Document(obj['content'], obj['version']);
+    this.editarea.refresh(this.doc);
   } 
 
   Editor.prototype.apply_insert = function(obj) {
     this.editarea.save_position();
-    console.log('apply_inset');
     this.doc.apply_insert(obj);
     this.editarea.refresh(this.doc);
       if(obj['node'] == this.editarea.caret.node && obj['y'] <= this.editarea.caret.offset){
         this.editarea.caret.offset ++;
       }
     this.editarea.restore_position();
-    this.document_version = obj['version'];          
   }
 
   Editor.prototype.apply_delete = function(obj) {
@@ -82,14 +77,13 @@ Editor = (function() {
         this.editarea.caret.offset --;
       }
     this.editarea.restore_position();
-    this.document_version = obj['version']; 
   }
 
   Editor.prototype.send_insert = function(evt) {
     var position = this.editarea.get_position();
     this.lock('change');
     var edit = String.fromCharCode(evt.charCode);
-    var json = {"action":"insert", "node": position['node'], "y": position['offset'], "version": this.document_version, "changes": edit};
+    var json = {"action":"insert", "node": position['node'], "y": position['offset'], "version": this.doc.version, "changes": edit};
     this.socket.send(json);
     return false;
   }
@@ -100,10 +94,10 @@ Editor = (function() {
     var length = 1;
     var json; 
     if(key == 8) { // backspace, left-delete 
-      json = {"action":"delete", "node": position['node'], "y": position['offset'] + 1, "version": this.document_version, "direction": "left", "length": length};
+      json = {"action":"delete", "node": position['node'], "y": position['offset'] + 1, "version": this.doc.version, "direction": "left", "length": length};
     }
     if (key == 46) { // canc, righ-delete
-      var json = {"action":"delete", "node": position['node'], "y": position['offset'], "version": this.document_version, "direction": "right", "length": length};
+      var json = {"action":"delete", "node": position['node'], "y": position['offset'], "version": this.doc.version, "direction": "right", "length": length};
     }              
     this.socket.send(json);
     return false;
@@ -112,7 +106,7 @@ Editor = (function() {
   Editor.prototype.send_relocate = function(evt) {
     if (this.editarea.disable('?')) { return false }
     position = this.editarea.get_position();
-    var json = {"action":"relocate", "node": position['node'], "y": position['offset'], "version": this.document_version };
+    var json = {"action":"relocate", "node": position['node'], "y": position['offset'], "version": this.doc.version };
     this.socket.send(json);
     this.lock('relocate');
   }
