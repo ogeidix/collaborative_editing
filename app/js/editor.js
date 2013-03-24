@@ -18,6 +18,7 @@
 Editor = (function() {
 
   function Editor(username, filename) {          
+    this.document = false;
     this.editor = $('#editor');
     this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
     this.document_version = 0;
@@ -57,6 +58,7 @@ Editor = (function() {
   Editor.prototype.apply_load = function(obj) {
     this.editor.html(obj['content']);
     this.document_version = obj['version'];
+    this.document = new Document(obj['content'], obj['version']);
   } 
 
   Editor.prototype.apply_insert = function(obj) {

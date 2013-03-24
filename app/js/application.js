@@ -16,6 +16,7 @@ var components =
 
  '/socket.js',
  '/chat.js',
+ '/document.js',
  '/editor.js',
  '/xpathhelper.js'];
 
