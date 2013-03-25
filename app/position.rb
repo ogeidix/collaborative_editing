@@ -36,7 +36,7 @@ module CollaborativeEditing
               
               # TODO: this must be modified for deletion
               # currently works just ofr insertion
-              if change.verb == 'insert'              
+              if change.is_a? Insertion
                 if @node == change.position.node
                   if @offset > change.position.offset
                     @offset += change.content.length

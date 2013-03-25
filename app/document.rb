@@ -1,4 +1,4 @@
-0module CollaborativeEditing
+module CollaborativeEditing
     class Document
 
         # This class represent the document

@@ -37,7 +37,7 @@ module CollaborativeEditing
           change   = Insertion.new(@username, position, msg[:changes])
           granted  = @room.request_change(self, change)
           if granted
-            @position = change.new_position(@room.document.version)
+            @position = change.new_position
           end
           send_to_browser action: 'lock', about: 'insert', granted: granted
 
@@ -46,7 +46,7 @@ module CollaborativeEditing
           change = Deletion.new(@username, position, msg[:direction], msg[:length].to_i)
           granted = @room.request_change(self, change)
           if(granted)
-            @position = change.new_position(@room.document.version)
+            @position = change.new_position
           end
           send_to_browser action: 'lock', about: 'delete', granted: granted
 
