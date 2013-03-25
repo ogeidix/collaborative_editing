@@ -32,7 +32,7 @@ module CollaborativeEditing
           @room.talk @username, msg[:message]
           send_to_browser action: 'lock', about: 'change', granted: true
           
-        when 'insert'
+        when 'insertion'
           position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
           change   = Insertion.new(@username, position, msg[:changes])
           granted  = @room.request_change(self, change)
