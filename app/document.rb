@@ -1,24 +1,27 @@
 module CollaborativeEditing
     class Document
 
-        # This class represent the document
-        # its purpose is to manage the content,
-        # its changes and its history
+        # This class represent the document its purpose is 
+        # to manage the content, its changes and its history
 
+        # this is a global counter for changes that are in memory
         @@operations_since_checkpoint = 0
-        @@UPDATE_FREQUENCY = 5        
+        
+        # After indicates the frequency after which we write
+        # the in-memory copy of files to disk
+        @@UPDATE_FREQUENCY = 5     
 
         attr_reader :filename, :version, :rexml_doc, :history
         
-        def operations_since_checkpoint
+        def operations_since_checkpoint  # getter
           @@operations_since_checkpoint
         end
 
-        def reset_operations_since_checkpoint
+        def reset_operations_since_checkpoint   # reset
           @@operations_since_checkpoint = 0
         end
 
-        def UPDATE_FREQUENCY
+        def UPDATE_FREQUENCY # getter
           @@UPDATE_FREQUENCY
         end
         
@@ -111,31 +114,45 @@ module CollaborativeEditing
             end
         end
         
-        # Bring the base copy in sync with current version of the file
+        # Bring the on-disk copy in sync with in-memory version of the file
         def update_master(checksum, lsn_increment = 1)
+        
+            # update the meta information in the file
             @rexml_doc[1][1].string = "version = " + @version.to_s
             @rexml_doc[1][3].string = "md5_checksum = " + checksum
             @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + lsn_increment).to_s
             
-#            FileUtils.cp("data/" + filename, "data/" + filename + ".swp") 
+            # write the file to the disk
             File.open("data/" + filename, 'w') {|f| f.write(@rexml_doc) }
-#            log_checkpoint(checksum, "base")
-            
-#            FileUtils.cp("data/" + filename, "data/" + filename + ".swp")
-#            log_checkpoint(checksum, "swp")
         end
         
         def secure_change_in_logs(checksum, this_change)
-            Application.logger.recovery @filename.to_s + Application.logger.DELIMITER \
-                + @version.to_s                  + Application.logger.DELIMITER \
-                + checksum                       + Application.logger.DELIMITER \
-                + this_change.type_of_change  + Application.logger.DELIMITER \
-                + this_change.username.to_s      + Application.logger.DELIMITER \
-                + this_change.position.node.to_s + Application.logger.DELIMITER \
-                + this_change.position.offset.to_s + Application.logger.DELIMITER
+            # Create the log message for the operation performed
+            # Log structure is:
+            # <filename> <version> <checksum> <username> <node> <offset> <change type> <change meta>
+            #
+            # The <change meta> for insertion is just the data inserted.
+            # For deletion, we need to store the direction and length of chars deleted.
+            # NOTE: Currently we are not using checksum for any logic that
+            #       could be possibly used for checking consistency of disk
+            
+            log  = @filename.to_s                   + Application.logger.DELIMITER
+            log += @version.to_s                    + Application.logger.DELIMITER
+            log += checksum                         + Application.logger.DELIMITER
+            log += this_change.username.to_s        + Application.logger.DELIMITER
+            log += this_change.position.node.to_s   + Application.logger.DELIMITER 
+            log += this_change.position.offset.to_s + Application.logger.DELIMITER
 
-                # \
-                #+ this_change.content
+            if this_change.is_a? Insertion
+                log += "insertion"      + Application.logger.DELIMITER
+                log += change.content   + Application.logger.DELIMITER
+            elsif this_change.is_a? Deletion
+                log += "deletion"       + Application.logger.DELIMITER
+                log += change.direction + Application.logger.DELIMITER
+                log += change.length    + Application.logger.DELIMITER
+            end
+
+            Application.logger.recovery log
         end
     end
 end
