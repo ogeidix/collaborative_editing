@@ -30,16 +30,26 @@ module CollaborativeEditing
         end
         
         def transform(history, up_to = Float::INFINITY)
-            while (history[@version+1] != nil && @version+1 < up_to) do
+            while (history[@version] != nil && @version < up_to) do
               # transform the position and increment the version
-              change = history[@version+1]
+              change = history[@version]
               
               # TODO: this must be modified for deletion
               # currently works just ofr insertion
               if change.is_a? Insertion
                 if @node == change.position.node
-                  if @offset > change.position.offset
+                  if @offset >= change.position.offset
                     @offset += change.content.length
+                  end
+                end
+              elsif change.is_a? Deletion
+                if @node == change.position.node
+                  if (change.direction == 'left' && 
+                      (change.position.offset <= @offset))
+                      @offset -= change.length
+                  elsif (change.direction == 'right' &&
+                         (change.position.offset <= @offset))
+                      @offset -= change.length
                   end
                 end
               end

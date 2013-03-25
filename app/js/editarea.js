@@ -68,7 +68,7 @@ Editarea = (function() {
 			} else if (obj.action=='deletion'){
 				if (obj.node == this.caret.node && obj.offset <= this.caret.offset && obj.direction=='left'){
 					this.caret.offset -= obj.length;
-				} else if (obj.node == this.caret.node && obj.offset < this.caret.offset && obj.direction=='right'){
+				} else if (obj.node == this.caret.node && obj.offset <= this.caret.offset && obj.direction=='right'){
 					this.caret.offset -= obj.length;
 				}
 			}
