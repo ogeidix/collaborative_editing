@@ -37,9 +37,16 @@ Editor = (function() {
     // events handlers
     this.editor = $('#editor');
 
-    this.editor.on('mousedown', function() {      if(_this.editarea.disable('?')) { return false } });
+    this.editor.on('mousedown', function() {      
+      if(_this.editarea.disable('?')) { return false }
+      _this.editarea.save_position();
+    });
 
-    this.editor.on('click', function() { _this.send_relocate() });
+    this.editor.on('mouseup', function() {      
+      _this.send_relocate();
+    });
+
+//    this.editor.on('click', function() { _this.send_relocate() });
 
     this.editor.on('keypress', function(evt) { _this.send_insert(evt) });
 
@@ -48,7 +55,6 @@ Editor = (function() {
       key = evt.keyCode;
       if(key == 13) { return false } // disable enter key
       if(key == 37 || key == 38 || key == 39 || key == 40) {
-        if (_this.editarea.disable('?')) { return false }
         _this.editarea.save_position();
       } // arrows keys
     
