@@ -36,6 +36,11 @@ module CollaborativeEditing
         def request_change(client, change)
             Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.type_of_change}")
 
+            if (client.position.version < change.position.version)
+                Application.logger.debug format_log("transfer - client: #{change.username} @pos: #{change.position} from: #{client.position.version} to: #{change.position.version}" )
+                client.position.transform(@document.history, change.position.version)
+            end
+
             # check coherent of position of client with server
             if (client.position != change.position)
                 Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: position incoherent client: #{client.position.to_s} change: #{change.position.to_s}")
@@ -49,6 +54,8 @@ module CollaborativeEditing
             @clients.each { |client|
                 next if client.username == change.username
                 next if client.position.nil?
+                position_clone = client.position.clone
+                position_clone.transform(@document.history, change.position.version)
                 if change.conflict? client.position
                     Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: conflict  change of: #{change.username} confilict with #{client.username}'s position #{client.position}")
                     return false
@@ -72,13 +79,6 @@ module CollaborativeEditing
             end
 
             broadcast h     
-            @clients.each { |client|
-                next if client.position.nil?
-                if (client.position.version <= change.position.version)
-                    Application.logger.debug format_log("transfer - user: #{change.username} pos: #{change.position} from: #{client.position.version} to: #{change.position.version+1}" )
-                    client.position.transform(@document.history, change.position.version+1)
-                end
-            }
 
             Application.logger.debug format_log("request change - user: #{change.username} status: granted")
 

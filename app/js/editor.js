@@ -115,7 +115,7 @@ Editor = (function() {
     this.editarea.restore_position()
     // }
     if (about == this.lock_about && granted) { this.editarea.enable() }
-    if (about == this.lock_about && !granted) { this.editarea.disable(); window.alert("conflict " + about + "! please choose another position") }
+    if (about == this.lock_about && !granted) { this.editarea.disable(); window.alert("conflict " + about + "! please choose another position"); this.editarea.enable();  }
   }
 
   return Editor;
