@@ -34,7 +34,12 @@ module CollaborativeEditing
         end
 
         def request_change(client, change)
-            Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.content}")
+            Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.type_of_change}")
+
+            if (client.position.version < change.position.version)
+                client.position.transform(@document.history, change.position.version)
+            end
+
 
             # check coherent of position of client with server
             if (client.position != change.position)

@@ -1,4 +1,5 @@
 require_relative 'change'
+
 module CollaborativeEditing
     class Insertion < Change
 
@@ -19,7 +20,7 @@ module CollaborativeEditing
         end
 
         def to_hash
-            return ({:type => 'insert', :content => @content}).merge(@position.to_hash)
+            return ({:user => @username, :type => 'insertion', :content => @content}).merge(@position.to_hash)
         end
     end
 end

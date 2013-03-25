@@ -36,19 +36,15 @@ module CollaborativeEditing
           position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
           change   = Insertion.new(@username, position, msg[:changes])
           granted  = @room.request_change(self, change)
-          if granted
-            @position = change.new_position
-          end
-          send_to_browser action: 'lock', about: 'insert', granted: granted
+          @position = change.new_position if granted
+          send_to_browser action: 'lock', about: 'insertion', granted: granted
 
-        when 'delete'
+        when 'deletion'
           position = Position.new(msg[:node], msg[:offset].to_i, msg[:version].to_i)
-          change = Deletion.new(@username, position, msg[:direction], msg[:length].to_i)
+          change   = Deletion.new(@username, position, msg[:direction], msg[:length].to_i)
           granted = @room.request_change(self, change)
-          if(granted)
-            @position = change.new_position
-          end
-          send_to_browser action: 'lock', about: 'delete', granted: granted
+          @position = change.new_position if granted
+          send_to_browser action: 'lock', about: 'deletion', granted: granted
 
         when 'relocate'
           new_position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)

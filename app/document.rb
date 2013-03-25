@@ -129,11 +129,13 @@ module CollaborativeEditing
             Application.logger.recovery @filename.to_s + Application.logger.DELIMITER \
                 + @version.to_s                  + Application.logger.DELIMITER \
                 + checksum                       + Application.logger.DELIMITER \
-                + this_change.class.to_s.downcase  + Application.logger.DELIMITER \
+                + this_change.type_of_change  + Application.logger.DELIMITER \
                 + this_change.username.to_s      + Application.logger.DELIMITER \
                 + this_change.position.node.to_s + Application.logger.DELIMITER \
-                + this_change.position.offset.to_s + Application.logger.DELIMITER \
-                + this_change.content
+                + this_change.position.offset.to_s + Application.logger.DELIMITER
+
+                # \
+                #+ this_change.content
         end
     end
 end

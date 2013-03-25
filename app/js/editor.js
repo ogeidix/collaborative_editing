@@ -70,7 +70,7 @@ Editor = (function() {
 
   Editor.prototype.send_insert = function(evt) {
     var position = this.editarea.get_position();
-    this.lock('insert');
+    this.lock('insertion');
     var edit = String.fromCharCode(evt.charCode);
     var json = {"action":"insertion", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "changes": edit};
     this.socket.send(json);
@@ -78,16 +78,16 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
-    this.lock('delete');
+    this.lock('deletion');
     var position = this.editarea.get_position();
     var length = 1;
-    var json; 
+    var direction; 
     if(key == 8) { // backspace, left-delete 
-      json = {"action":"delete", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "direction": "left", "length": length};
-    }
-    if (key == 46) { // canc, righ-delete
-      var json = {"action":"delete", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "direction": "right", "length": length};
+      direction = "left";      
+    } else if (key == 46) { // canc, righ-delete
+      direction = "right"
     }              
+    var json = json = {"action":"deletion", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "direction": direction, "length": length};
     this.socket.send(json);
     return false;
   }

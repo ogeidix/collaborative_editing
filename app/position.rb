@@ -29,8 +29,8 @@ module CollaborativeEditing
             "(#{@node},#{@offset})@v#{@version}"
         end
         
-        def transform(history)
-            while (history[@version+1] != nil) do
+        def transform(history, up_to = Float::INFINITY)
+            while (history[@version+1] != nil && @version+1 < up_to) do
               # transform the position and increment the version
               change = history[@version+1]
               

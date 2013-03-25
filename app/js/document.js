@@ -29,7 +29,7 @@ Document = (function() {
 	    } else {
 	    	node.nodeValue = node.nodeValue.substring(0, offset) + node.nodeValue.substr(offset + length);
 	    }
-	    this.version = obj['version']; 
+	    this.version = obj['version']+1; 
 	}
 
 	return Document;
