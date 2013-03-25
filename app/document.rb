@@ -7,7 +7,6 @@ module CollaborativeEditing
 
         @@operations_since_checkpoint = 0
         @@UPDATE_FREQUENCY = 5        
-        @history = {}
 
         attr_reader :filename, :version, :rexml_doc, :history
         
@@ -26,6 +25,7 @@ module CollaborativeEditing
         def initialize(filename)
             @filename = filename
             @version = 0
+            @history = {}
             
             # server maintains all files under $COLLAB_EDITOR_HOME/data/
             # if file does not exists, create a new file with default content
@@ -82,18 +82,18 @@ module CollaborativeEditing
             end
 
             current_node = parent_node.children[n-1]            
-            prefix = current_node.value[0, this_change.position.y]
-            suffix = current_node.value[this_change.position.y, current_node.value.length]
+            prefix = current_node.value[0, this_change.position.offset]
+            suffix = current_node.value[this_change.position.offset, current_node.value.length]
             interim = ""
             
-            if  this_change.verb.eql?('delete')
+            if  this_change.is_a? Deletion
                 this_length = this_change.length
                 if this_change.direction.eql?('left')
-                    prefix  = current_node.value[0, this_change.position.y - this_length]
+                    prefix  = current_node.value[0, this_change.position.offset - this_length]
                 else 
-                    suffix = current_node.value[this_change.position.y + this_length, current_node.value.length]
+                    suffix = current_node.value[this_change.position.offset + this_length, current_node.value.length]
                 end
-            elsif this_change.verb.eql?('insert')
+            elsif this_change.is_a? Insertion
                 interim = this_change.content.to_s 
             end
             current_node.value = prefix + interim + suffix
@@ -129,7 +129,7 @@ module CollaborativeEditing
             Application.logger.recovery @filename.to_s + Application.logger.DELIMITER \
                 + @version.to_s                  + Application.logger.DELIMITER \
                 + checksum                       + Application.logger.DELIMITER \
-                + this_change.verb               + Application.logger.DELIMITER \
+                + this_change.class.to_s.downcase  + Application.logger.DELIMITER \
                 + this_change.username.to_s      + Application.logger.DELIMITER \
                 + this_change.position.node.to_s + Application.logger.DELIMITER \
                 + this_change.position.offset.to_s + Application.logger.DELIMITER \

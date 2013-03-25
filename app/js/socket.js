@@ -31,8 +31,8 @@ Socket = (function() {
       case 'message'  : this.chat.receive_message(obj); break;
       case 'control'  : this.chat.receive_control(obj); break;
       case 'loadfile' : this.editor.apply_load(obj); break;
-      case 'insert'   : this.editor.apply_insert(obj); break;
-      case 'delete'   : this.editor.apply_delete(obj); break;
+      case 'insertion'   : this.editor.apply_insert(obj); break;
+      case 'deletion'   : this.editor.apply_delete(obj); break;
       case 'lock'     : this.editor.unlock(obj); break;
     }
   }

@@ -57,16 +57,16 @@ module CollaborativeEditing
 
 
             @document.execute_change(change, true)
-            h = {   action:  change.verb,
+            h = {   action:  change.class.to_s.downcase,
                     user:    change.username,
                     node:    change.position.node,
-                    y:       change.position.y,
+                    offset:       change.position.offset,
                     version: document.version 
                 }
                       
-            if change.verb.eql?('insert')
+            if change.is_a? Insertion
                 h[:changes] = change.content
-            elsif change.verb.eql?('delete') 
+            elsif change.is_a? Deletion
                 h[:direction] = change.direction
                 h[:length] = change.length
             end

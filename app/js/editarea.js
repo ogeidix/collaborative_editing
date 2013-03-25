@@ -60,14 +60,14 @@ Editarea = (function() {
 	Editarea.prototype.refresh = function(doc, obj) {
 		this.save_position();
 		if(obj){
-			if(obj.action=='insert'){
-				if (obj.node == this.caret.node && obj.y <= this.caret.offset){
+			if(obj.action=='insertion'){
+				if (obj.node == this.caret.node && obj.offset <= this.caret.offset){
 					this.caret.offset += obj.changes.length;
 				}
-			} else if (obj.action=='delete'){
-				if (obj.node == this.caret.node && obj.y <= this.caret.offset && obj.direction=='left'){
+			} else if (obj.action=='deletion'){
+				if (obj.node == this.caret.node && obj.offset <= this.caret.offset && obj.direction=='left'){
 					this.caret.offset -= obj.length;
-				} else if (obj.node == this.caret.node && obj.y < this.caret.offset && obj.direction=='right'){
+				} else if (obj.node == this.caret.node && obj.offset < this.caret.offset && obj.direction=='right'){
 					this.caret.offset -= obj.length;
 				}
 			}

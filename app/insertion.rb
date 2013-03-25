@@ -1,3 +1,4 @@
+require_relative 'change'
 module CollaborativeEditing
     class Insertion < Change
 

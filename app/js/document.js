@@ -16,7 +16,7 @@ Document = (function() {
 	    var offset = parseInt(obj['y']);
 	    var node = XPathHelper.get_node_from_XPath(obj['node'], $(this.content[0]));
 	    node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
-	    this.version = obj['version'];
+	    this.version = obj['version']+1;
 	}
 
 	Document.prototype.apply_delete = function(obj) {
