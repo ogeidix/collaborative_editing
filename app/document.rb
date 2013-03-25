@@ -71,7 +71,7 @@
             end
         end
     
-        def execute_change(this_change, isLogged)
+        def execute_change(this_change, toLog)
             parent_node = REXML::XPath.first @rexml_doc, this_change.position.parent_node
             i = 0
             n = 0
@@ -105,7 +105,7 @@
             @version += 1
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
             
-            if isLogged == true
+            if toLog == true
                 secure_change_in_logs(checksum, this_change)
                 @@operations_since_checkpoint += 1
             end
@@ -129,19 +129,11 @@
             Application.logger.recovery @filename.to_s + Application.logger.DELIMITER \
                 + @version.to_s                  + Application.logger.DELIMITER \
                 + checksum                       + Application.logger.DELIMITER \
-                + "change_file"                  + Application.logger.DELIMITER \
+                + this_change.verb               + Application.logger.DELIMITER \
                 + this_change.username.to_s      + Application.logger.DELIMITER \
                 + this_change.position.node.to_s + Application.logger.DELIMITER \
-                + this_change.position.y.to_s    + Application.logger.DELIMITER \
+                + this_change.position.offset.to_s + Application.logger.DELIMITER \
                 + this_change.content
-        end
-
-        def log_checkpoint(checksum, type)
-            Application.logger.recovery filename + Application.logger.DELIMITER \
-                             + @version.to_s + Application.logger.DELIMITER \
-                             + checksum      + Application.logger.DELIMITER \
-                             + "check_point" + Application.logger.DELIMITER \
-                             + type
         end
     end
 end
