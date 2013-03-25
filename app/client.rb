@@ -33,23 +33,16 @@ module CollaborativeEditing
           send_to_browser action: 'lock', about: 'change', granted: true
           
         when 'insert'
-          position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
+          position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
           change   = Insertion.new(@username, position, msg[:changes])
           granted  = @room.request_change(self, change)
           if granted
             @position = change.new_position(@room.document.version)
           end
-          
           send_to_browser action: 'lock', about: 'insert', granted: granted
 
-          #else
-          #  if change.deletion?
-          #    send_to_browser action: 'lock', about: 'change', granted: false
-          #  end
-                 
-        
         when 'delete'
-          position = Position.new(msg[:node], msg[:y].to_i, msg[:version].to_i)
+          position = Position.new(msg[:node], msg[:offset].to_i, msg[:version].to_i)
           change = Deletion.new(@username, position, msg[:direction], msg[:length].to_i)
           granted = @room.request_change(self, change)
           if(granted)
@@ -58,7 +51,7 @@ module CollaborativeEditing
           send_to_browser action: 'lock', about: 'delete', granted: granted
 
         when 'relocate'
-          new_position = Position.new(msg[:node], msg[:y].to_i , msg[:version].to_i)
+          new_position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
           if (@room.request_relocate(@username, new_position))
             @position = new_position  
             send_to_browser action: 'lock', about: 'relocate', granted: true

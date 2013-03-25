@@ -32,6 +32,12 @@ module CollaborativeEditing
             return false
         end
 
+        def transform(history)
+            # find the version parent of the history
+            # apply to the end
+            return true
+        end
+
         def to_hash
             return { :user => @username, :position => position.to_hash, :type => @verb, :content => @change}
         end

@@ -36,11 +36,15 @@ module CollaborativeEditing
         def request_change(client, change)
             Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.change}")
 
+            # check coherent of position of client with server
             if (client.position != change.position)
                 Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: position incoherent")
-            #    return false
+                return false
             end
-#
+
+            # transform the position to the current version
+            change.transform(@document.history)
+
             # Check for conflict
             @clients.each { |client|
                 next if client.username == change.username
