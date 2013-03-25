@@ -60,6 +60,7 @@ Editarea = (function() {
 	Editarea.prototype.refresh = function(doc, obj) {
 		this.save_position();
 		if(obj){
+		  console.log("refresh ", obj);
 			if(obj.action=='insertion'){
 				if (obj.node == this.caret.node && obj.offset <= this.caret.offset){
 					this.caret.offset += obj.changes.length;

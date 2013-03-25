@@ -23,5 +23,9 @@ module CollaborativeEditing
         def to_hash
             throw "to implement in subclass"
         end
+        
+        def type_of_change
+          return self.class.to_s.downcase.split('::').last
+        end
     end
 end

@@ -13,14 +13,14 @@ Document = (function() {
 
   	Document.prototype.apply_insert = function(obj) {
 	    var edit = obj['changes'];
-	    var offset = parseInt(obj['y']);
+	    var offset = parseInt(obj['offset']);
 	    var node = XPathHelper.get_node_from_XPath(obj['node'], $(this.content[0]));
 	    node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);
 	    this.version = obj['version']+1;
 	}
 
 	Document.prototype.apply_delete = function(obj) {
-	    var offset = parseInt(obj['y']);
+	    var offset = parseInt(obj['offset']);
 	    var direction = obj['direction'];
 	    var length = obj['length'];
 	    var node = XPathHelper.get_node_from_XPath(obj['node'], $(this.content[0]));

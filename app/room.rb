@@ -57,11 +57,11 @@ module CollaborativeEditing
 
 
             @document.execute_change(change, true)
-            h = {   action:  change.class.to_s.downcase,
+            h = {   action:  change.type_of_change,
                     user:    change.username,
                     node:    change.position.node,
-                    offset:       change.position.offset,
-                    version: document.version 
+                    offset:  change.position.offset,
+                    version: change.position.version 
                 }
                       
             if change.is_a? Insertion

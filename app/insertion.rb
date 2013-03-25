@@ -11,7 +11,7 @@ module CollaborativeEditing
 
         def new_position
             new_offset = @position.offset + @content.length
-            return Position.new(@position.node, new_offset, @position.version)
+            return Position.new(@position.node, new_offset, @position.version+1)
         end
 
         def conflict?(position)
