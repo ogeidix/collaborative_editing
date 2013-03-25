@@ -47,9 +47,17 @@ Editor = (function() {
       if(_this.editarea.disable('?')) { return false }
       key = evt.keyCode;
       if(key == 13) { return false } // disable enter key
-      if(key == 37 || key == 38 || key == 39 || key == 40) { _this.send_relocate() } // arrows keys
+      if(key == 37 || key == 38 || key == 39 || key == 40) {
+        if (_this.editarea.disable('?')) { return false }
+        _this.editarea.save_position();
+      } // arrows keys
+    
       if(key == 8 || key == 46) { _this.send_delete(key) } // backspace and canc
     });
+
+    this.editor.on('keyup', function(evt){
+      if(key == 37 || key == 38 || key == 39 || key == 40) { _this.send_relocate(); } // arrows keys
+    }); 
 
   }
   
@@ -69,6 +77,7 @@ Editor = (function() {
   }
 
   Editor.prototype.send_insert = function(evt) {
+    this.editarea.save_position();
     var position = this.editarea.get_position();
     this.lock('insertion');
     var edit = String.fromCharCode(evt.charCode);
@@ -78,6 +87,7 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
+    this.editarea.save_position();
     this.lock('deletion');
     var position = this.editarea.get_position();
     var length = 1;
@@ -93,29 +103,36 @@ Editor = (function() {
   }
 
   Editor.prototype.send_relocate = function(evt) {
-    if (this.editarea.disable('?')) { return false }
     position = this.editarea.get_position();
+    this.editarea.save_position();
+    this.editarea.restore_position('old');
     var json = {"action":"relocate", "node": position['node'], "offset": position['offset'], "version": this.doc.version };
     this.socket.send(json);
+    // restore the position of keydown
     this.lock('relocate');
   }
 
   Editor.prototype.lock = function(reason) {
-    this.editarea.save_position();
     this.lock_about = reason;
     this.editarea.disable();
   }
 
+
   Editor.prototype.unlock = function(obj) {    
     about = obj['about'];
     granted = obj['granted'];
-    // if (about == 'change' && granted) {
-    //   this.restore_position({offset: 1})
-    // } else {
-    this.editarea.restore_position()
-    // }
-    if (about == this.lock_about && granted) { this.editarea.enable() }
-    if (about == this.lock_about && !granted) { this.editarea.disable(); window.alert("conflict " + about + "! please choose another position"); this.editarea.enable();  }
+    if (about == 'relocate') {
+        if (granted) {
+            this.editarea.restore_position()
+        }else{
+            window.alert("conflict " + about + "! please choose another position");
+        }
+    }else{
+        if (!granted){
+            window.alert("conflict " + about + "! please choose another position");
+        }
+    }
+    this.editarea.enable();
   }
 
   return Editor;

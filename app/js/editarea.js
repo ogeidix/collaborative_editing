@@ -7,6 +7,7 @@ Editarea = (function() {
 	function Editarea(element_id) {
 		this.element = $('#'+element_id);
 		this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
+        this.old_caret = false;
 		this.caret   = false;
 		console.log("[editarea.js] init");
 	}
@@ -30,21 +31,24 @@ Editarea = (function() {
   	}
 
   	Editarea.prototype.save_position = function() {
+        this.old_caret = this.caret;
     	this.caret = this.get_position();
 		console.log("[editarea.js] save_position: " + this.caret.node + ", " + this.caret.offset);
   	}
 
 
-	Editarea.prototype.restore_position = function(delta) {
-		if (!this.caret.node) { return true; }
-		console.log("[editarea.js] restore_position: " + this.caret.node + ", " + this.caret.offset);
+	Editarea.prototype.restore_position = function(old) {
+        var caret = this.caret;
+	    if(old){
+            caret = this.old_caret;
+	    }
+		if (!caret.node) { return true; }
+		console.log("[editarea.js] restore_position: " + caret.node + ", " + caret.offset);
 	    var sel   = rangy.getSelection();
 	    var range = rangy.createRange();
-	    var node = XPathHelper.get_node_from_XPath(this.caret.node, $('#'+this.root_id));
-	    var offset = this.caret.offset;
-	    if(delta && delta.offset){
-	      offset = offset + delta.offset
-	    }
+	    var node = XPathHelper.get_node_from_XPath(caret.node, $('#'+this.root_id));
+	    var offset = caret.offset;
+
 	    range.setStart(node, offset);
 	    range.collapse();
 	    sel.setSingleRange(range);
