@@ -1,16 +1,16 @@
 module CollaborativeEditing
     class Position
 
-        attr_reader :node, :y, :version
+        attr_reader :node, :offset, :version
 
-        def initialize(node, y, version)
+        def initialize(node, offset, version)
             @node = node
-            @y = y
+            @offset = offset
             @version = version
         end
 
         def == (another)
-            return @node == another.node && @y == another.y && @version == another.version
+            return @node == another.node && @offset == another.offset && @version == another.version
         end
 	
     	def parent_node
@@ -22,11 +22,30 @@ module CollaborativeEditing
     	end
 
         def to_hash
-            return { :node => @node, :offset => @y, :version => @version}
+            return { :node => @node, :offset => @offset, :version => @version}
         end
 
         def to_s
-            "(#{@node},#{@y})@v#{@version}"
+            "(#{@node},#{@offset})@v#{@version}"
+        end
+        
+        def transform(history)
+            while (history[@version+1] != nil) do
+              # transform the position and increment the version
+              change = history[@version+1]
+              
+              # TODO: this must be modified for deletion
+              # currently works just ofr insertion
+              if change.verb == 'insert'              
+                if @node == change.position.node
+                  if @offset > change.position.offset
+                    @offset += change.content.length
+                  end
+                end
+              end
+              @version += 1
+            end
+            
         end
     end
 end

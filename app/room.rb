@@ -34,7 +34,7 @@ module CollaborativeEditing
         end
 
         def request_change(client, change)
-            Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.change}")
+            Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.content}")
 
             # check coherent of position of client with server
             if (client.position != change.position)
@@ -65,7 +65,7 @@ module CollaborativeEditing
                 }
                       
             if change.verb.eql?('insert')
-                h[:changes] = change.change
+                h[:changes] = change.content
             elsif change.verb.eql?('delete') 
                 h[:direction] = change.direction
                 h[:length] = change.length

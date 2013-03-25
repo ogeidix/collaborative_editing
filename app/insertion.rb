@@ -1,22 +1,22 @@
 module CollaborativeEditing
     class Insertion 
 
-        attr_reader :username, :position, :change, :verb
+        attr_reader :username, :position, :content, :verb
 
-        def initialize (author, position, new_change)
+        def initialize (author, position, new_content)
             @username = author
             @position = position
-            @change = new_change
+            @content = new_content
             @verb = 'insert'
         end
 
         def new_position(document_version)
-            new_y = @position.y + @change.length
+            new_y = @position.y + @content.length
             return Position.new(@position.node, new_y, document_version)
         end
 
         def deletion?
-            @change[0].ord == 8
+            @content[0].ord == 8
         end
 
         def conflict?(position)
@@ -24,10 +24,10 @@ module CollaborativeEditing
 			# IF the versions dont match, then we need to bring them to the same version 
 			# and then compare them
 
-            # if change is APPEND
+            # if content is APPEND
             #    return false
-            # if change is DELETE
-            #    y = change,position.y- change.size 
+            # if content is DELETE
+            #    y = content,position.y- content.size 
             #    ....
             return false
         end
@@ -35,11 +35,12 @@ module CollaborativeEditing
         def transform(history)
             # find the version parent of the history
             # apply to the end
+            @position.transform(history)
             return true
         end
 
         def to_hash
-            return { :user => @username, :position => position.to_hash, :type => @verb, :content => @change}
+            return { :user => @username, :position => position.to_hash, :type => @verb, :content => @content}
         end
     end
 end

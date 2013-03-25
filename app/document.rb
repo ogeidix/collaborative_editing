@@ -1,4 +1,4 @@
-module CollaborativeEditing
+0module CollaborativeEditing
     class Document
 
         # This class represent the document
@@ -7,8 +7,9 @@ module CollaborativeEditing
 
         @@operations_since_checkpoint = 0
         @@UPDATE_FREQUENCY = 5        
+        @history = {}
 
-        attr_reader :filename, :version, :rexml_doc
+        attr_reader :filename, :version, :rexml_doc, :history
         
         def operations_since_checkpoint
           @@operations_since_checkpoint
@@ -93,10 +94,14 @@ module CollaborativeEditing
                     suffix = current_node.value[this_change.position.y + this_length, current_node.value.length]
                 end
             elsif this_change.verb.eql?('insert')
-                interim = this_change.change.to_s 
+                interim = this_change.content.to_s 
             end
             current_node.value = prefix + interim + suffix
             
+            # add this change to the history of the file
+            @history[@version] = this_change
+            
+            # increment the version
             @version += 1
             checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
             
@@ -128,7 +133,7 @@ module CollaborativeEditing
                 + this_change.username.to_s      + Application.logger.DELIMITER \
                 + this_change.position.node.to_s + Application.logger.DELIMITER \
                 + this_change.position.y.to_s    + Application.logger.DELIMITER \
-                + this_change.change
+                + this_change.content
         end
 
         def log_checkpoint(checksum, type)
