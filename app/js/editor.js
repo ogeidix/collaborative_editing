@@ -77,6 +77,7 @@ Editor = (function() {
 
     // ___ Arrows ___ handle like a "mouseUP"
     this.editor.on('keyup', function(evt){
+      var key = evt.keyCode;
       if(key == 37 || key == 38 || key == 39 || key == 40) {
         _this.send_relocate();
       }
