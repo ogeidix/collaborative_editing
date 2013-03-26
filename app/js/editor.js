@@ -46,19 +46,31 @@ Editor = (function() {
       _this.send_relocate();
     });
 
-//    this.editor.on('click', function() { _this.send_relocate() });
-
     this.editor.on('keypress', function(evt) { _this.send_insert(evt) });
 
     this.editor.on('keydown', function(evt) {
       if(_this.editarea.disable('?')) { return false }
       key = evt.keyCode;
+      if(key == 32) {
+        pos = _this.editarea.get_position();
+        node = (XPathHelper.get_node_from_XPath(pos.node, $('#usergenerated')));
+        if ( pos.offset == 0 ||
+             node.nodeValue.substring(pos.offset-1, pos.offset)==' ' ||
+             node.nodeValue.substring(pos.offset, pos.offset+1)==' '){
+          return false;
+        }
+        if (pos.offset < node.nodeValue.l && node.nodeValue.substring(pos.offset-1, pos.offset)==' '){
+          return false;
+        }
+      }
       if(key == 13) { return false } // disable enter key
       if(key == 37 || key == 38 || key == 39 || key == 40) {
         _this.editarea.save_position();
       } // arrows keys
     
-      if(key == 8 || key == 46) { _this.send_delete(key) } // backspace and canc
+      if(key == 8 || key == 46) { 
+        return _this.send_delete(key)
+      } // backspace and canc
     });
 
     this.editor.on('keyup', function(evt){
@@ -93,6 +105,7 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
+    if(this.editarea.get_position().offset == 0){ return false; }
     this.editarea.save_position();
     this.lock('deletion');
     var position = this.editarea.get_position();
