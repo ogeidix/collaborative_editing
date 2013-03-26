@@ -37,42 +37,8 @@ module CollaborativeEditing
                 FileUtils.cp("app/default.file", "data/" + filename)
                 @rexml_doc = REXML::Document.new(File.new("data/" + filename))
             else 
-                # if the file already exists, then
-                # return it
-                                # perform recovery using logs before returning the file to the user
-                @rexml_doc = REXML::Document.new(File.new("data/" + filename))
-                dirty = false
-                @version = @rexml_doc[0][1].string.split[2].to_i
-                checksum = @rexml_doc[0][3].string
-                lastLSN = @rexml_doc[0][5].string.split[2].to_i
-                sizeOfLogfile = %x{wc -l "app/collabedit.log"}.split.first.to_i
-
-                # read the log file from this LSN and apply all the changes 
-                # logged for this file.
-                counter = lastLSN.to_i
-
-                while counter.to_i <= sizeOfLogfile.to_i
-                   currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
-                   splits = currLine.split(Application.logger.DELIMITER)
-                   
-                   if splits[0] == filename   # if the log corresponds to the same file
-                      position      = Position.new(splits[5], splits[6].to_i , splits[1].to_i)
-                      change_done = splits[7].tr("\n","")
-                      logged_change = Change.new(splits[4], position, change_done)
-                      execute_change(logged_change, false)
-                      puts(currLine)
-                      dirty = true
-                   end
-                   counter +=1
-                end
-                
-                # write back this document to disk so that we need not perform
-                # the recovery again
-                if dirty == true
-                    checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
-                    update_master(checksum, 0)
-                end
-
+                # if the file already exists, then use it
+                @rexml_doc = REXML::Document.new(File.open("data/" + filename))
             end
         end
     
