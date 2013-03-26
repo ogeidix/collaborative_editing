@@ -38,8 +38,9 @@ module CollaborativeEditing
                currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
                splits = currLine.split(@DELIMITER)
 
-               if splits[1] == "CHECKPOINT"
+               if splits[1].tr("\n","") == "CHECKPOINT"
                   last_checkpoint_pos = counter
+                  @lsn = splits[0].to_i
                end
                counter +=1
             end
@@ -98,7 +99,7 @@ module CollaborativeEditing
             @lsn += 1
             
             # delete the old log file
-            File.delete()
+            File.delete(@logfilename)
          end 
 
          FileUtils.touch @logfilename
