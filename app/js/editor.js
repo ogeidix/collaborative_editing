@@ -129,7 +129,7 @@ Editor = (function() {
     }
     var node = (XPathHelper.get_node_from_XPath(position.node, $('#usergenerated')));
     // Ignore deletion which will cause a change in the structure. TODO: handle deletion in case of changes in the structure.
-    if((direction == "left" && position.offset == 0) || (direction == "right" && position.offset == node.nodeValue.length){
+    if((direction == "left" && position.offset == 0) || (direction == "right" && position.offset == node.nodeValue.length)){
       return false; 
     }
     this.editarea.save_position();

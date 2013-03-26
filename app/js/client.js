@@ -9,7 +9,7 @@
 Client = (function() {
 
   function Client(username, filename) {
-    console.log("[socket.js] init");
+    console.log("[client.js] init");
     var url = 'ws://' + window.location.host + '/client/'+ filename;
     var socketClass = 'MozWebSocket' in window ? MozWebSocket : WebSocket;
     this.connection = new socketClass(url);
@@ -27,12 +27,12 @@ Client = (function() {
 
   Client.prototype.send = function(json) {
     var string = JSON.stringify(json);
-    console.log("[socket.js] send: ", string);
+    console.log("[client.js] send: ", string);
     this.connection.send(string);
   }
 
   Client.prototype.receive = function(evt) {
-    console.log("[socket.js] receive: ", evt.data);
+    console.log("[client.js] receive: ", evt.data);
     var obj = $.evalJSON(evt.data);
     if (typeof(obj) != 'object') { return }
     switch(obj['action']) {
