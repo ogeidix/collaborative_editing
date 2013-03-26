@@ -1,19 +1,21 @@
 ////////////////////////////////////////////////////////////////////////////////////// 
 // Editor object
 ////////////////////////////////////////////////////////////////////////////////////// 
-//    Editor                        open socket connection and register events handlers
-//    Editor#apply_*                methods that apply remote changes, called by socket#onmessage event handler
+// This object take care of the logic of the client managing the
+// user input and the messages coming from the server.
+//
+//    Editor                        register events handlers
+//    Editor#apply_*                methods that apply remote changes, called by client#onmessage event handler
 //        Editor#apply_load(obj)    load remote file into the editor
 //        Editor#apply_insert(obj)  apply remote insert
 //        Editor#apply_delete(obj)  apply remote delete
+//        Editor#apply_lock(obj)    apply (un)lock messages
 //    Editor#send_*                 send local changes
 //        Editor#send_insert(evt)   send insert
 //        Editor#send_delete(key)   send delete, key is event.keyCode (needed for delete direction)
 //        Editor#send_relocate(evt) send cursor relocation
-//    Editor#get_location           utility, return current node and offset
-//    Editor#lock(obj)              manage remote locks
-//    Editor#enable                 utility, enable editor (if called with argument '?' return editor status as bool)
-//    Editor#disable                utility, opposite of enable
+//    Editor#lock(reason)              lock the editor for 'reason'
+
 
 Editor = (function() {
 
@@ -27,28 +29,29 @@ Editor = (function() {
     this.doc        = false;
     this.editarea   = new Editarea('editor');
 
+    // ----------------- Event Handlers -----------------
     var _this = this;
-
-    // events handlers
     this.editor = $('#editor');
 
+    // ___ MOUSE ___
     this.editor.on('mousedown', function() {      
       if(_this.editarea.disable('?')) { return false }
       _this.editarea.save_position();
     });
 
-    this.editor.on('mouseup', function() {      
-      _this.send_relocate();
-    });
+    this.editor.on('mouseup', function() { _this.send_relocate(); });
 
+    // ___ ASCII CHARACTERS ___
     this.editor.on('keypress', function(evt) { _this.send_insert(evt) });
 
+    // ___ SPECIAL KEYS ___
     this.editor.on('keydown', function(evt) {
       if(_this.editarea.disable('?')) { return false }
-      key = evt.keyCode;
-      if(key == 32) {
-        pos = _this.editarea.get_position();
-        node = (XPathHelper.get_node_from_XPath(pos.node, $('#usergenerated')));
+      var key = evt.keyCode;
+      // ___ Space ___ ignore if the previous or follow char is a space
+      if(key == 32) {   // TODO handle multiple space
+        var pos = _this.editarea.get_position();
+        var node = (XPathHelper.get_node_from_XPath(pos.node, $('#usergenerated')));
         if ( pos.offset == 0 ||
              node.nodeValue.substring(pos.offset-1, pos.offset)==' ' ||
              node.nodeValue.substring(pos.offset, pos.offset+1)==' '){
@@ -58,18 +61,25 @@ Editor = (function() {
           return false;
         }
       }
-      if(key == 13) { return false } // disable enter key
+      // ___ New Line ___ ignore it. TODO handle new line
+      if(key == 13) {
+        return false
+      }
+      // ___ Arrows ___ handle like a "mouseDOWN"
       if(key == 37 || key == 38 || key == 39 || key == 40) {
         _this.editarea.save_position();
-      } // arrows keys
-    
-      if(key == 8 || key == 46) { 
+      }
+      // ___ Delete and backspace ___
+      if(key == 8 || key == 46) {
         return _this.send_delete(key)
-      } // backspace and canc
+      }
     });
 
+    // ___ Arrows ___ handle like a "mouseUP"
     this.editor.on('keyup', function(evt){
-      if(key == 37 || key == 38 || key == 39 || key == 40) { _this.send_relocate(); } // arrows keys
+      if(key == 37 || key == 38 || key == 39 || key == 40) {
+        _this.send_relocate();
+      }
     }); 
 
   }
@@ -89,6 +99,15 @@ Editor = (function() {
     this.editarea.refresh(this.doc, obj);
   }
 
+  Editor.prototype.apply_lock = function(obj) {    
+    if (obj['granted']) {
+      if (obj['about'] == 'relocate') { this.editarea.restore_position(); }
+    }else{
+      window.alert("Conflict during: " + obj['about'] + "!\nChoose another position");
+    }
+    this.editarea.enable();
+  }
+
   Editor.prototype.send_insert = function(evt) {
     this.editarea.save_position();
     var position = this.editarea.get_position();
@@ -100,9 +119,6 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
-    if(this.editarea.get_position().offset == 0){ return false; }
-    this.editarea.save_position();
-    this.lock('deletion');
     var position = this.editarea.get_position();
     var length = 1;
     var direction; 
@@ -110,7 +126,14 @@ Editor = (function() {
       direction = "left";      
     } else if (key == 46) { // canc, righ-delete
       direction = "right"
-    }              
+    }
+    var node = (XPathHelper.get_node_from_XPath(position.node, $('#usergenerated')));
+    // Ignore deletion which will cause a change in the structure. TODO: handle deletion in case of changes in the structure.
+    if((direction == "left" && position.offset == 0) || (direction == "right" && position.offset == node.nodeValue.length){
+      return false; 
+    }
+    this.editarea.save_position();
+    this.lock('deletion');
     var json = json = {"action":"deletion", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "direction": direction, "length": length};
     this.socket.send(json);
     return false;
@@ -122,31 +145,12 @@ Editor = (function() {
     this.editarea.restore_position('old');
     var json = {"action":"relocate", "node": position['node'], "offset": position['offset'], "version": this.doc.version };
     this.socket.send(json);
-    // restore the position of keydown
     this.lock('relocate');
   }
 
   Editor.prototype.lock = function(reason) {
     this.lock_about = reason;
     this.editarea.disable();
-  }
-
-
-  Editor.prototype.unlock = function(obj) {    
-    about = obj['about'];
-    granted = obj['granted'];
-    if (about == 'relocate') {
-        if (granted) {
-            this.editarea.restore_position()
-        }else{
-            window.alert("conflict " + about + "! please choose another position");
-        }
-    }else{
-        if (!granted){
-            window.alert("conflict " + about + "! please choose another position");
-        }
-    }
-    this.editarea.enable();
   }
 
   return Editor;
