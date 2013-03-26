@@ -1,5 +1,6 @@
 module CollaborativeEditing
     class Room
+
         @@rooms = {}
 
         attr_reader :document

@@ -83,12 +83,16 @@ module CollaborativeEditing
         end
         
         # Bring the on-disk copy in sync with in-memory version of the file
-        def update_master(checksum, lsn_increment = 1)
+        def update_master(checksum, lsn_increment = 1, lsn = -1)
         
             # update the meta-information in the file
             @rexml_doc[1][1].string = "version = " + @version.to_s
             @rexml_doc[1][3].string = "md5_checksum = " + checksum
-            @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + lsn_increment).to_s
+            if lsn == -1
+              @rexml_doc[1][5].string = "lsn = " + (Application.logger.lsn.to_i + lsn_increment).to_s
+            else
+              @rexml_doc[1][5].string = "lsn = " + (lsn.to_i + lsn_increment).to_s
+            end
             
             # write the in-memory version of the file to the disk
             File.open("data/" + filename, 'w') {|f| f.write(@rexml_doc) }
@@ -97,13 +101,13 @@ module CollaborativeEditing
         # Create the log message for the operation performed and pass this 
         # to the logger code which will write it to the log file
         # Log structure is:
-        # <filename> <version> <checksum> <username> <node> <offset> <change type> <change meta>
+        # <lsn> <filename> <version> <checksum> <username> <node> <offset> <change type> <change meta>
         #
         # The <change meta> for insertion is just the data inserted.
         # For deletion, we need to store the direction and length of chars deleted.
         #
-        # NOTE: Currently we are not using checksum for any logic that
-        #       could be possibly used for checking consistency of disk
+        # NOTE: Currently we are not using checksum for any logic. It
+        #       could be used for checking consistency of disk copy.
         def secure_change_in_logs(checksum, this_change)            
             log  = @filename.to_s                   + Application.logger.DELIMITER
             log += @version.to_s                    + Application.logger.DELIMITER
@@ -122,6 +126,7 @@ module CollaborativeEditing
             end
 
             # invoke the logger function to log this to the log file
+            # it will add the lsn automatically
             Application.logger.recovery log
         end
     end
