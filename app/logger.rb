@@ -25,76 +25,85 @@ module CollaborativeEditing
          @file_mutex  = Mutex.new
          @levels      = levels
          @DELIMITER   = " !!! "
-
+         @lsn = 0
+         
          if File.file?(@logfilename)
             @lsn = %x{wc -l < "#{@logfilename}"}.to_i
 
             # get the point where the last checkpoint was written
             sizeOfLogfile = %x{wc -l "app/collabedit.log"}.split.first.to_i
-            last_checkpoint_lsn = 0
             counter = 1
+            last_checkpoint_pos = 1
             while counter.to_i <= sizeOfLogfile.to_i
                currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
-               
-               if currLine == "CHECKPOINT"
-                  last_checkpoint_lsn = counter
+               splits = currLine.split(@DELIMITER)
+
+               if splits[1] == "CHECKPOINT"
+                  last_checkpoint_pos = counter
                end
                counter +=1
             end
 
             # perform recovery using logs
             files = {}
+            last_checkpoint_pos += 1
+            
+            while last_checkpoint_pos.to_i <= sizeOfLogfile.to_i
+               currLine = %x{awk 'NR==#{last_checkpoint_pos}' "app/collabedit.log"}
+               splits = currLine.split(@DELIMITER)
 
-            while last_checkpoint_lsn.to_i <= sizeOfLogfile.to_i
-               currLine = %x{awk 'NR==#{last_checkpoint_lsn}' "app/collabedit.log"}
-               splits = currLine.split(Application.logger.DELIMITER)
-               
-               filename = splits[0]
-               version  = splits[1]
-               checksum = splits[2]
-               author   = splits[3]
-               node     = splits[4]
-               offset   = splits[5]
-               change   = splits[6]
+               log_lsn  = splits[0]
+               filename = splits[1]
+               version  = splits[2]
+               checksum = splits[3]
+               author   = splits[4]
+               node     = splits[5]
+               offset   = splits[6]
+               change   = splits[7]
       
                if files[filename] == nil
-                  doc = Document.new("data/" + filename)
-               else 
+                  doc = Document.new(filename.to_s)
+               else
                   doc = files[filename]
                end
 
+               @lsn = log_lsn.to_i
                file_lsn = doc.rexml_doc[0][5].string.split[2].to_i
-               if file_lsn < last_checkpoint_lsn
+               if file_lsn.to_i < log_lsn.to_i
                   # apply the changes in the log
-                  position = Position.new(node, offset, version)
+                  position = Position.new(node, offset.to_i, version.to_i)
                   
                   if change == 'insertion'
-                    content = splits[7]
+                    content = splits[8]
                     logged_change = Insertion.new(author, position, content)
                   elsif change == 'deletion'
                     direction = splits[8]
                     length    = splits[9]
-                    logged_change = Deletion.new(author, position, direction, length)
+                    logged_change = Deletion.new(author, position, direction, length.to_i)
                   end
 
                   doc.execute_change(logged_change, false)
                   files[filename] = doc
                end
-               last_checkpoint_lsn +=1
+
+               last_checkpoint_pos += 1
             end
             
             # write all these updated documents to disk
             files.each_pair do |k,v|
               checksum = Digest::MD5.hexdigest(v.rexml_doc.to_s)
-              v.update_master(checksum, 0)
+              v.update_master(checksum, 0, @lsn.to_i)
             end
-         else 
-              # if the log file aint existing, then create a new one
-              @lsn = 0
-              FileUtils.touch @logfilename
-         end
+            
+            @lsn += 1
+            
+            # delete the old log file
+            File.delete()
+         end 
 
+         FileUtils.touch @logfilename
          @logfile = File.open(@logfilename, "a")
+         log_to_file("CHECKPOINT")
     	end
 
       def debug(message)
@@ -131,7 +140,7 @@ module CollaborativeEditing
             # not being used for recovery. LSN is used for that.
             #message = Time.now.to_s + @DELIMITER + message
             @lsn += 1
-            @logfile.puts(message)
+            @logfile.puts(@lsn.to_s + @DELIMITER + message)
             @logfile.flush
           end
         end
