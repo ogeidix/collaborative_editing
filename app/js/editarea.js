@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////////// 
 // Editarea object
 ////////////////////////////////////////////////////////////////////////////////////// 
+// This object represent the "edit area" where the user works.
+// It is used to change the content of the editzone while preserving the caret position
 
 Editarea = (function() {
 
@@ -8,7 +10,7 @@ Editarea = (function() {
 		this.element = $('#'+element_id);
 		this.root_id = 'usergenerated'; // using id string because the element is not available in the dom at this point
         this.old_caret = false;
-		this.caret   = false;
+		this.caret     = false;
 		console.log("[editarea.js] init");
 	}
 

@@ -41,7 +41,7 @@ Client = (function() {
       case 'loadfile'  : this.editor.apply_load(obj); break;
       case 'insertion' : this.editor.apply_insert(obj); break;
       case 'deletion'  : this.editor.apply_delete(obj); break;
-      case 'lock'      : this.editor.unlock(obj); break;
+      case 'lock'      : this.editor.apply_lock(obj); break;
     }
   }
 

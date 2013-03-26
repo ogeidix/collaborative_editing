@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////////////////////
 // XPathHelper module
 //////////////////////////////////////////////////////////////////////////////////////
-//  XpathHelper.get_XPath_from_node(node, root_id)    return XPath for node up to root_id
-//  XpathHelper.get_node_from_XPath(xpath, root_id)   return node from XPath 
+//  XpathHelper.get_XPath_from_node(node, root_id) return XPath for node up to root_id
+//  XpathHelper.get_node_from_XPath(xpath, parent) return node from XPath. 
 
 
 XPathHelper = {
@@ -28,7 +28,7 @@ XPathHelper = {
   },
 
   get_node_from_XPath: function(xpath, parent) {
-    var element = parent;
+    var element = $(parent);
     if (xpath == '') { return element[0] }
 
     xpath = xpath.split('/');
