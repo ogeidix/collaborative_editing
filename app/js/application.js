@@ -14,15 +14,16 @@ var components =
  '/lib/jquery.json-2.2.min.js',
  '/lib/rangy-core.js',
 
- '/socket.js',
  '/chat.js',
  '/editarea.js',
  '/document.js',
  '/editor.js',
- '/xpathhelper.js'];
+ '/xpathhelper.js',
+ '/client.js'];
 
 console.log("[application.js] Init Collaborative Editor Client ");
 components.forEach(loadExternalJS);
+
 document.addEventListener('DOMContentLoaded',function(){
 
     // Show login if browser support WebSocket
@@ -31,17 +32,18 @@ document.addEventListener('DOMContentLoaded',function(){
       $('#login').show();
     }
 
-    // join on click
+    // On click on "join!" start the client
     $('#login form').submit(function() {
-      if ($('#username').val() == "" || $('#filename').val() == "") {
+      event.preventDefault();
+      var username = $('#username').val();
+      var filename = $('#filename').val();
+      if (username == "" || filename == "") {
           window.alert("Please enter the username and filename !!");
       } else {
           $('#login').hide();
           $('#application').show();
-          $('input#message').focus();
-          username = $('#username').val();
-          filename = $('#filename').val();
-          editor = new Editor(username, filename);
+          $('input#message').focus(); 
+          client = new Client(username, filename);
       }
       return false;
     });

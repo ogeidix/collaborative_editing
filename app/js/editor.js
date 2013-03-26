@@ -17,22 +17,17 @@
 
 Editor = (function() {
 
-  function Editor(username, filename) {          
+  function Editor(username, filename, client) {
     
-    this.lock_about = ''
+    this.socket   = client;
     this.username = username;    
     this.filename = filename;
-    url = 'ws://' + window.location.host + '/client/'+ filename;
 
-    this.doc      = false;
-    this.editarea = new Editarea('editor');
-    this.chat     = new Chat(username);
-    this.socket   = new Socket(url, this, this.chat);
+    this.lock_about = ''
+    this.doc        = false;
+    this.editarea   = new Editarea('editor');
 
     var _this = this;
-    this.socket.connection.onopen = function() {
-      _this.socket.send({ action: 'join', user: username });
-    }
 
     // events handlers
     this.editor = $('#editor');

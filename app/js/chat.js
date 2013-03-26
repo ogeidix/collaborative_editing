@@ -4,7 +4,8 @@
 
 Chat = (function() {
 
-	function Chat(username) {
+	function Chat(username, client) {
+		this.socket   = client;
 		this.username = username;
 		this.container = $('div#msgs');
 
@@ -12,7 +13,7 @@ Chat = (function() {
 	      event.preventDefault();
 	      var input = $(this).find(':input');
 	      var msg = input.val();
-	      editor.socket.connection.send($.toJSON({ action: 'message', message: msg }));
+	      this.socket.send($.toJSON({ action: 'message', message: msg }));
 	      input.val('');
     	});
 	}
