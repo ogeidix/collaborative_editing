@@ -68,7 +68,7 @@ Editarea = (function() {
 		if(obj){
 			if(obj.action=='insertion'){
 				if (obj.node == this.caret.node && obj.offset <= this.caret.offset){
-					this.caret.offset += obj.changes.length;
+					this.caret.offset += obj.content.length;
 				}
 			} else if (obj.action=='deletion'){
 				if (obj.node == this.caret.node && obj.offset <= this.caret.offset && obj.direction=='left'){

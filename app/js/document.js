@@ -13,7 +13,7 @@ Document = (function() {
 	}
 
   	Document.prototype.apply_insert = function(obj) {
-	    var edit = obj['changes'];
+	    var edit = obj['content'];
 	    var offset = parseInt(obj['offset']);
 	    var node = XPathHelper.get_node_from_XPath(obj['node'], $(this.content[0]));
 	    node.nodeValue = node.nodeValue.substring(0, offset) + edit + node.nodeValue.substr(offset);

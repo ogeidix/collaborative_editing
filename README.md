@@ -1,6 +1,12 @@
 Collaborative Editing
 =====================
 
+Requirements
+--------------------------
+
+  * ruby 1.9.3
+
+
 To install the application
 --------------------------
 

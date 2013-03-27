@@ -114,7 +114,7 @@ Editor = (function() {
     var position = this.editarea.get_position();
     this.lock('insertion');
     var edit = String.fromCharCode(evt.charCode);
-    var json = {"action":"insertion", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "changes": edit};
+    var json = {"action":"insertion", "node": position['node'], "offset": position['offset'], "version": this.doc.version, "content": edit};
     this.socket.send(json);
     return false;
   }

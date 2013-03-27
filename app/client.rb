@@ -1,3 +1,15 @@
+###############################################################################
+## Client
+###############################################################################
+## this class represent the client connected to the server,
+## a new object is created for each connection.
+##
+## Client#join_room                 executed when a new connection is initialized
+## Client#send_to_browser(message)  send the message to the browser through websocket
+## Client#received_data(data)       executed when a message from the browser is received
+##                                  it routes each message to the correct action
+##
+
 module CollaborativeEditing
   class Client < Cramp::Websocket
 
@@ -23,9 +35,8 @@ module CollaborativeEditing
       case msg[:action]
         when 'join'
           @username = msg[:user]
-          send_to_browser action: 'loadfile',
-                          content: @room.document.rexml_doc,
-                          version: @room.document.version
+          doc = @room.document
+          send_to_browser action: 'loadfile', content: doc.rexml_doc, version: doc.version
           @room.join @username
 
         when 'message'
@@ -34,7 +45,7 @@ module CollaborativeEditing
           
         when 'insertion'
           position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
-          change   = Insertion.new(@username, position, msg[:changes])
+          change   = Insertion.new(@username, position, msg[:content])
           granted  = @room.request_change(self, change)
           @position = change.new_position if granted
           send_to_browser action: 'lock', about: 'insertion', granted: granted
@@ -48,12 +59,9 @@ module CollaborativeEditing
 
         when 'relocate'
           new_position = Position.new(msg[:node], msg[:offset].to_i , msg[:version].to_i)
-          if (@room.request_relocate(@username, new_position))
-            @position = new_position  
-            send_to_browser action: 'lock', about: 'relocate', granted: true
-          else
-            send_to_browser action: 'lock', about: 'relocate', granted: false
-          end
+          granted = @room.request_relocate(@username, new_position)
+          @position = new_position if granted
+          send_to_browser action: 'lock', about: 'relocate', granted: granted
 
         when 'bye'
           @room.unsubscribe self
