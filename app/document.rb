@@ -9,15 +9,11 @@ module CollaborativeEditing
         
         # After indicates the frequency after which we write
         # the in-memory copy of files to disk
-        @@UPDATE_FREQUENCY = 5     
+        UPDATE_FREQUENCY = 5     
 
         attr_reader :filename, :version, :rexml_doc, :history
         
-        def operations_since_checkpoint  
-          @@operations_since_checkpoint  # getter
-        end
-
-        def reset_operations_since_checkpoint   
+        def self.reset_operations_since_checkpoint   
           @@operations_since_checkpoint = 0   # reset
         end
 
@@ -79,6 +75,10 @@ module CollaborativeEditing
                 checksum = Digest::MD5.hexdigest(@rexml_doc.to_s)
                 secure_change_in_logs(checksum, this_change)
                 @@operations_since_checkpoint += 1
+
+                if @@operations_since_checkpoint >= UPDATE_FREQUENCY
+                  Application.checkpointer.schedule!
+                end
             end
         end
         

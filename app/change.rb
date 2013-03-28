@@ -8,8 +8,15 @@ module CollaborativeEditing
             @position = position
         end
 
-        def conflict?(position)
-            throw "to implement in subclass"
+        def conflict?(positions, history)
+            positions = ([] << positions).flatten
+            positions.each { |other|
+                if (other.version < @position.version)
+                    other = other.clone.transform(history, @position.version)
+                end
+                yield other
+            }
+            return false
         end
 
         def transform(history)
@@ -20,8 +27,8 @@ module CollaborativeEditing
             throw "to implement in subclass"
         end        	
 
-        def to_hash
-            throw "to implement in subclass"
+        def to_hash(to_be_merged)
+            ({:user => @username, :action => type_of_change}).merge(@position.to_hash).merge(to_be_merged)
         end
         
         def type_of_change

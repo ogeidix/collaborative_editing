@@ -38,7 +38,12 @@ module CollaborativeEditing
 	   		end 	
 
 	   		def execute!
-				Application.logger.recovery "CHECKPOINT"
+                Rooms.rooms.each do |name, room|
+                    checksum = Digest::MD5.hexdigest(room.document.rexml_doc.to_s)
+                    room.document.update_master checksum
+                end
+                Application.logger.recovery "CHECKPOINT"
+                Document.reset_operations_since_checkpoint
 	   		end
     end
 end

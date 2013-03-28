@@ -17,7 +17,7 @@ Client = (function() {
     this.editor = new Editor(username, filename, this); 
     this.chat   = new Chat(username, this);
     
-    _this = this;         
+    var _this = this;         
     $(window).on('beforeunload', function() { _this.close() });    
     this.connection.onmessage = function(evt) { _this.receive(evt) }
     this.connection.onopen = function() {

@@ -25,9 +25,10 @@ Editor = (function() {
     this.username = username;    
     this.filename = filename;
 
-    this.lock_about = ''
-    this.doc        = false;
-    this.editarea   = new Editarea('editor');
+    this.lock_about    = ''
+    this.ignore_events = false;
+    this.doc           = false;
+    this.editarea      = new Editarea('editor');
 
     // ----------------- Event Handlers -----------------
     var _this = this;
@@ -36,6 +37,7 @@ Editor = (function() {
     // ___ MOUSE ___
     this.editor.on('mousedown', function() {      
       if(_this.editarea.disable('?')) { return false }
+      _this.ignore_events = true;
       _this.editarea.save_position();
     });
 
@@ -46,7 +48,7 @@ Editor = (function() {
 
     // ___ SPECIAL KEYS ___
     this.editor.on('keydown', function(evt) {
-      if(_this.editarea.disable('?')) { return false }
+      if(_this.editarea.disable('?') || _this.ignore_events==true) { return false }
       var key = evt.keyCode;
       // ___ Space ___ ignore if the previous or follow char is a space
       if(key == 32) {   // TODO handle multiple space
@@ -107,6 +109,7 @@ Editor = (function() {
       window.alert("Conflict during: " + obj['about'] + "!\nChoose another position");
     }
     this.editarea.enable();
+    this.ignore_events = false;
   }
 
   Editor.prototype.send_insert = function(evt) {
@@ -120,6 +123,7 @@ Editor = (function() {
   }
 
   Editor.prototype.send_delete = function(key) {
+    console.log("[editor] send deletion");
     var position = this.editarea.get_position();
     var length = 1;
     var direction; 
@@ -141,17 +145,19 @@ Editor = (function() {
   }
 
   Editor.prototype.send_relocate = function(evt) {
+    console.log("[editor] send relocate");
     position = this.editarea.get_position();
     this.editarea.save_position();
     this.editarea.restore_position('old');
+    this.lock('relocate');
     var json = {"action":"relocate", "node": position['node'], "offset": position['offset'], "version": this.doc.version };
     this.socket.send(json);
-    this.lock('relocate');
   }
 
   Editor.prototype.lock = function(reason) {
     this.lock_about = reason;
     this.editarea.disable();
+    this.ignore_events = true;
   }
 
   return Editor;

@@ -5,6 +5,10 @@ module CollaborativeEditing
 
         attr_reader :document
 
+        def self.rooms
+            @@rooms
+        end
+
         def self.for(document)
             @@rooms[document] ||= Room.new(document)
         end
@@ -37,10 +41,9 @@ module CollaborativeEditing
         def request_change(client, change)
             Application.logger.debug format_log("request change - user: #{change.username} pos: #{change.position} change: #{change.type_of_change}")
 
-            if (client.position.version < change.position.version)
-                Application.logger.debug format_log("transfer - client: #{change.username} @pos: #{change.position} from: #{client.position.version} to: #{change.position.version}" )
-                client.position.transform(@document.history, change.position.version)
-            end
+            # transform the position to the current version
+            change.transform(@document.history)
+            client.position.transform(@document.history) if client.position
 
             # check coherent of position of client with server
             if (client.position != change.position)
@@ -48,55 +51,28 @@ module CollaborativeEditing
                 return false
             end
 
-            # transform the position to the current version
-            change.transform(@document.history)
-
             # Check for conflict
-            @clients.each { |client|
-                next if client.username == change.username
-                next if client.position.nil?
-                position_clone = client.position.clone
-                position_clone.transform(@document.history, change.position.version)
-                if change.conflict? client.position
-                    Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: conflict  change of: #{change.username} confilict with #{client.username}'s position #{client.position}")
-                    return false
-                end
-            }
-
-
-            @document.execute_change(change, true)
-            h = {   action:  change.type_of_change,
-                    user:    change.username,
-                    node:    change.position.node,
-                    offset:  change.position.offset,
-                    version: change.position.version 
-                }
-                      
-            if change.is_a? Insertion
-                h[:changes] = change.content
-            elsif change.is_a? Deletion
-                h[:direction] = change.direction
-                h[:length] = change.length
+            if change.conflict?(clients_positions(client.username), @document.history)
+                Application.logger.debug format_log("request change - user: #{change.username} status: denied reason: conflict  change of: #{change.username} confilict with #{client.username}'s position #{client.position}")
+                return false
             end
-
-            broadcast h     
 
             Application.logger.debug format_log("request change - user: #{change.username} status: granted")
+            @document.execute_change(change, true)
+            broadcast change.to_hash
 
-            if @document.operations_since_checkpoint >= @document.UPDATE_FREQUENCY
-              @document.reset_operations_since_checkpoint
-              @@rooms.values.each do |room|
-                  checksum = Digest::MD5.hexdigest(room.document.rexml_doc.to_s)
-                  room.document.update_master checksum
-              end
-              Application.checkpointer.schedule!
-            end
             return true
         end
 
         def request_relocate(username, position)
-            Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")      
-            if (@document.version != position.version or conflict_with_others(username, position))
+            Application.logger.debug format_log("request relocate - user: #{username} pos: #{position}")
+            if (@document.version > position.version &&
+                ! position.transform(@document.history, position.version))
+                    not_exist = "Position does not exist in current document version"
+                    Application.logger.debug format_log("request relocate - user: #{username} status: denied. " + not_exist)
+                    return false
+            end
+            if position.conflict?(clients_positions(username), @document.history)
                 Application.logger.debug format_log("request relocate - user: #{username} status: denied")
                 return false 
             end
@@ -114,12 +90,8 @@ module CollaborativeEditing
                 return "[room] " + @document.filename.to_s + " v" + document.version.to_s + " - " + message
             end
 
-            def conflict_with_others(username, position)
-                @clients.each { |client| 
-                    next        if client.username == username
-                    return true if client.position == position
-                }
-                return false
+            def clients_positions(except_username = nil)
+                (@clients.reject { |c| c.position==nil || c.username==except_username }).map { |c| c.position }
             end
     end
 end

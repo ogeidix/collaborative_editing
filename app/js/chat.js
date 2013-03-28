@@ -13,11 +13,12 @@ Chat = (function() {
 		this.username = username;
 		this.container = $('div#msgs');
 
+		var _this = this;
 		$('#channel form').submit(function(event) {
 	      event.preventDefault();
 	      var input = $(this).find(':input');
 	      var msg = input.val();
-	      this.socket.send($.toJSON({ action: 'message', message: msg }));
+	      _this.socket.send({ action: 'message', message: msg });
 	      input.val('');
     	});
 	}

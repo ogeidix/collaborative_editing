@@ -15,12 +15,12 @@ module CollaborativeEditing
             return Position.new(@position.node, new_offset, @position.version+1)
         end
 
-        def conflict?(position)
+        def conflict?(positions, history)
             return false
         end
 
         def to_hash
-            return ({:user => @username, :type => 'insertion', :content => @content}).merge(@position.to_hash)
+            super({:content => @content})
         end
     end
 end
