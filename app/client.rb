@@ -30,7 +30,7 @@ module CollaborativeEditing
 
     def received_data(data)
       Application.logger.debug("[client] received: " + data)
-      msg = parse_json(data)
+      msg = Yajl::Parser.parse(data, :symbolize_keys => true)
 
       case msg[:action]
         when 'join'
@@ -71,11 +71,6 @@ module CollaborativeEditing
 
         end
     end
-    
-    private
-      def parse_json(str)
-        str.gsub!("'","\\\\'")
-        Yajl::Parser.parse(str, :symbolize_keys => true)
-      end
+
   end
 end

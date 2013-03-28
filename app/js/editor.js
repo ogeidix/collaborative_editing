@@ -49,6 +49,7 @@ Editor = (function() {
     // ___ SPECIAL KEYS ___
     this.editor.on('keydown', function(evt) {
       if(_this.editarea.disable('?') || _this.ignore_events==true) { return false }
+      _this.ignore_events = true;
       var key = evt.keyCode;
       // ___ Space ___ ignore if the previous or follow char is a space
       if(key == 32) {   // TODO handle multiple space
