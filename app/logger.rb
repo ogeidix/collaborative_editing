@@ -1,3 +1,9 @@
+###############################################################################
+## Logger
+###############################################################################
+## this class is an utility to print logs in console and into recovery file
+
+
 module CollaborativeEditing
     class Logger
 
@@ -17,94 +23,26 @@ module CollaborativeEditing
       BOLD_OFF       = "\033[22m"
       BLINK_ON       = "\033[5m"
       BLINK_OFF      = "\033[25m"
-    
-      attr_reader :lsn, :DELIMITER, :logfilename
+
+      DELIMITER      = " !!! "
+
+      attr_reader :lsn, :logfilename
       
     	def initialize(logfile_name, levels)
     	   @logfilename = logfile_name
          @file_mutex  = Mutex.new
          @levels      = levels
-         @DELIMITER   = " !!! "
-         @lsn = 0
+         @lsn         = 0
          
-         if File.file?(@logfilename)
-            @lsn = %x{wc -l < "#{@logfilename}"}.to_i
+         if (File.file?(logfilename))
+           @logfile     = File.new(@logfilename)
+           line = ""
+           @logfile.each { |l| line = l}
+           @logfile.close
+           @lsn = line.split(DELIMITER)[0].to_i
+         end
 
-            # get the point where the last checkpoint was written
-            sizeOfLogfile = %x{wc -l "app/collabedit.log"}.split.first.to_i
-            counter = 1
-            last_checkpoint_pos = 1
-            while counter.to_i <= sizeOfLogfile.to_i
-               currLine = %x{awk 'NR==#{counter}' "app/collabedit.log"}
-               splits = currLine.split(@DELIMITER)
-
-               if splits[1].tr("\n","") == "CHECKPOINT"
-                  last_checkpoint_pos = counter
-                  @lsn = splits[0].to_i
-               end
-               counter +=1
-            end
-
-            # perform recovery using logs
-            files = {}
-            last_checkpoint_pos += 1
-            
-            while last_checkpoint_pos.to_i <= sizeOfLogfile.to_i
-               currLine = %x{awk 'NR==#{last_checkpoint_pos}' "app/collabedit.log"}
-               splits = currLine.split(@DELIMITER)
-
-               log_lsn  = splits[0]
-               filename = splits[1]
-               version  = splits[2]
-               checksum = splits[3]
-               author   = splits[4]
-               node     = splits[5]
-               offset   = splits[6]
-               change   = splits[7]
-      
-               if files[filename] == nil
-                  doc = Document.new(filename.to_s)
-               else
-                  doc = files[filename]
-               end
-
-               @lsn = log_lsn.to_i
-               file_lsn = doc.rexml_doc[0][5].string.split[2].to_i
-               if file_lsn.to_i < log_lsn.to_i
-                  # apply the changes in the log
-                  position = Position.new(node, offset.to_i, version.to_i)
-                  
-                  if change == 'insertion'
-                    content = splits[8]
-                    logged_change = Insertion.new(author, position, content)
-                  elsif change == 'deletion'
-                    direction = splits[8]
-                    length    = splits[9]
-                    logged_change = Deletion.new(author, position, direction, length.to_i)
-                  end
-
-                  doc.execute_change(logged_change, false)
-                  files[filename] = doc
-               end
-
-               last_checkpoint_pos += 1
-            end
-            
-            # write all these updated documents to disk
-            files.each_pair do |k,v|
-              checksum = Digest::MD5.hexdigest(v.rexml_doc.to_s)
-              v.update_master(checksum, 0, @lsn.to_i)
-            end
-            
-            @lsn += 1
-            
-            # delete the old log file
-            File.delete(@logfilename)
-         end 
-
-         FileUtils.touch @logfilename
          @logfile = File.open(@logfilename, "a")
-         log_to_file("CHECKPOINT")
     	end
 
       def debug(message)
@@ -141,7 +79,7 @@ module CollaborativeEditing
             # not being used for recovery. LSN is used for that.
             #message = Time.now.to_s + @DELIMITER + message
             @lsn += 1
-            @logfile.puts(@lsn.to_s + @DELIMITER + message)
+            @logfile.puts(@lsn.to_s + DELIMITER + message)
             @logfile.flush
           end
         end

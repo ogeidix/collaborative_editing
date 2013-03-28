@@ -9,16 +9,12 @@ module CollaborativeEditing
         
         # After indicates the frequency after which we write
         # the in-memory copy of files to disk
-        UPDATE_FREQUENCY = 5     
+        CHECKPOINT_FREQUENCY = 5     
 
         attr_reader :filename, :version, :rexml_doc, :history
         
         def self.reset_operations_since_checkpoint   
           @@operations_since_checkpoint = 0   # reset
-        end
-
-        def UPDATE_FREQUENCY
-          @@UPDATE_FREQUENCY    # getter
         end
         
         def initialize(filename)
@@ -76,7 +72,7 @@ module CollaborativeEditing
                 secure_change_in_logs(checksum, this_change)
                 @@operations_since_checkpoint += 1
 
-                if @@operations_since_checkpoint >= UPDATE_FREQUENCY
+                if @@operations_since_checkpoint >= CHECKPOINT_FREQUENCY
                   Application.checkpointer.schedule!
                 end
             end
@@ -109,20 +105,20 @@ module CollaborativeEditing
         # NOTE: Currently we are not using checksum for any logic. It
         #       could be used for checking consistency of disk copy.
         def secure_change_in_logs(checksum, this_change)            
-            log  = @filename.to_s                   + Application.logger.DELIMITER
-            log += @version.to_s                    + Application.logger.DELIMITER
-            log += checksum                         + Application.logger.DELIMITER
-            log += this_change.username.to_s        + Application.logger.DELIMITER
-            log += this_change.position.node.to_s   + Application.logger.DELIMITER 
-            log += this_change.position.offset.to_s + Application.logger.DELIMITER
+            log  = @filename.to_s                   + Logger::DELIMITER
+            log += @version.to_s                    + Logger::DELIMITER
+            log += checksum                         + Logger::DELIMITER
+            log += this_change.username.to_s        + Logger::DELIMITER
+            log += this_change.position.node.to_s   + Logger::DELIMITER 
+            log += this_change.position.offset.to_s + Logger::DELIMITER
 
             if this_change.is_a? Insertion
-                log += "insertion"             + Application.logger.DELIMITER
-                log += this_change.content     + Application.logger.DELIMITER
+                log += "insertion"             + Logger::DELIMITER
+                log += this_change.content     + Logger::DELIMITER
             elsif this_change.is_a? Deletion
-                log += "deletion"              + Application.logger.DELIMITER
-                log += this_change.direction   + Application.logger.DELIMITER
-                log += this_change.length.to_s + Application.logger.DELIMITER
+                log += "deletion"              + Logger::DELIMITER
+                log += this_change.direction   + Logger::DELIMITER
+                log += this_change.length.to_s + Logger::DELIMITER
             end
 
             # invoke the logger function to log this to the log file

@@ -12,10 +12,12 @@ Thread.abort_on_exception = true
 
 module CollaborativeEditing
   class Application
+    LOG_FILENAME = 'app/collabedit.log'
 
     def self.initialize!
       Cramp::Websocket.backend = :thin
-      @logger       = Logger.new 'app/collabedit.log', (ENV['LOG'] || 'info').split(',')
+      Checkpointer.recovery LOG_FILENAME
+      @logger       = Logger.new LOG_FILENAME, (ENV['LOG'] || 'info').split(',')
       @checkpointer = Checkpointer.new
     end
 
