@@ -37,7 +37,7 @@ module CollaborativeEditing
                     new_offset += @content.length
                 end
             end
-            return Position.new(other_position.node, new_offset, @version+1)
+            return Position.new(other_position.node, new_offset, @position.version+1)
         end
 
         def perform_change(document)
