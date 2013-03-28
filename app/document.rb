@@ -1,3 +1,10 @@
+###############################################################################
+## Document
+###############################################################################
+## this class represent the Document (the file content)
+## it is able to execute the changes, write log files and, update master copy
+##
+
 module CollaborativeEditing
     class Document
 

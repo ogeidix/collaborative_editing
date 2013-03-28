@@ -1,3 +1,10 @@
+###############################################################################
+## Checkpointer
+###############################################################################
+## Recovery (at the start of the system)
+## and CheckPoint (as separate thread)
+##
+
 require "thread"
 
 module CollaborativeEditing

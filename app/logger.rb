@@ -2,7 +2,7 @@
 ## Logger
 ###############################################################################
 ## this class is an utility to print logs in console and into recovery file
-
+##
 
 module CollaborativeEditing
     class Logger
