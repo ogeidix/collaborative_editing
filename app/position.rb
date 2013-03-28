@@ -42,29 +42,14 @@ module CollaborativeEditing
 
         def transform(history, up_to = Float::INFINITY)
             while (history[@version] != nil && @version < up_to) do
-              # transform the position and increment the version
               change = history[@version]
-              
+        
               return false if change.conflict?(self, history)
+              new_position = change.perform_transformation self
 
-              if change.is_a? Insertion
-                if @node == change.position.node
-                  if @offset >= change.position.offset
-                    @offset += change.content.length
-                  end
-                end
-              elsif change.is_a? Deletion
-                if @node == change.position.node
-                  if (change.direction == 'left' && 
-                      (change.position.offset <= @offset))
-                      @offset -= change.length
-                  elsif (change.direction == 'right' &&
-                         (change.position.offset <= @offset))
-                      @offset -= change.length
-                  end
-                end
-              end
-              @version += 1
+              @node    = new_position.node
+              @offset  = new_position.offset
+              @version = new_position.version
             end
             return self
         end

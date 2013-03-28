@@ -1,3 +1,10 @@
+###############################################################################
+## Insertion
+###############################################################################
+## represents the Insertion change and inherits the behaviour from the Change class
+## See change.rb for help
+##
+
 require_relative 'change'
 
 module CollaborativeEditing
@@ -22,5 +29,16 @@ module CollaborativeEditing
         def to_hash
             super({:content => @content})
         end
+
+        def perform_transformation(other_position)
+            new_offset = other_position.offset
+            if other_position.node == @position.node
+                if other_position.offset >= @position.offset
+                    new_offset += @content.length
+                end
+            end
+            return Position.new(other_position.node, new_offset, @version+1)
+        end
+
     end
 end

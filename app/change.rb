@@ -1,3 +1,17 @@
+###############################################################################
+## Change
+###############################################################################
+## this is the SUPER class of all the changes
+##
+## Change#transform(history)     change the object to be update with the history
+## Change#new_position           return a new object Position which is the user position after the change
+## Change#to_hash                return the attributes as hash, useful for JSON. will merge the input hash
+## Change#type_of_change         return the name of the change. It is extracted from the name of the class
+## Change#conflict               check the change agains ONE or AN ARRAY of lock positions.
+##                               !! receive in input A BLOCK OF CODE to perform the check against one position
+## Change#perform_transformation return a new Position object which is the input position after this change
+##
+
 module CollaborativeEditing
     class Change
 
@@ -33,6 +47,10 @@ module CollaborativeEditing
         
         def type_of_change
           return self.class.to_s.downcase.split('::').last
+        end
+
+        def perform_transformation(position)
+            throw "to implement in subclass"
         end
     end
 end

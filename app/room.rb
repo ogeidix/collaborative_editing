@@ -1,3 +1,19 @@
+###############################################################################
+## Room
+###############################################################################
+## this class represents virtual room where a group of people work,
+##
+## Room.for(filename)                        return the room for the specific filename or create it
+## Room#subscribe(client)                    add the client to the list of people inside the room
+## Room#join(username)                       tell everybody the client name
+## Room#talk(username, message)              tell everybody the message the client sent
+## Room#request_change(client, change)       try to execute the change on the document
+## Room#request_relocate(username, position) try to acquire the lock for position
+## -- private
+## Room#broadcast(message)                   send message to all the participants
+## Room#clients_positions(except_username)   extract the valid positions (locks) on the document excepted "username"
+##
+
 module CollaborativeEditing
     class Room
 
@@ -11,12 +27,6 @@ module CollaborativeEditing
 
         def self.for(document)
             @@rooms[document] ||= Room.new(document)
-        end
-
-        def initialize(document)
-            @document = Document.new(document)
-            @clients  = []
-            Application.logger.info format_log("room created")
         end
 
         def subscribe(client)
@@ -81,6 +91,12 @@ module CollaborativeEditing
         end
 
         private
+            def initialize(document)
+                @document = Document.new(document)
+                @clients  = []
+                Application.logger.info format_log("room created")
+            end
+
             def broadcast(message)
                 Application.logger.debug format_log("broadcast: " + message.to_s)
                 @clients.each { |client| client.send_to_browser message }

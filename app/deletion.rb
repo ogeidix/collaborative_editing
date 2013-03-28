@@ -1,3 +1,11 @@
+###############################################################################
+## Deletion
+###############################################################################
+## represents the Deletion change and inherits the behaviour from the Change class
+## See change.rb for help
+##
+
+
 require_relative 'change'
 
 module CollaborativeEditing
@@ -38,6 +46,18 @@ module CollaborativeEditing
 
       def to_hash
         super({:direction => @direction, :length => @length})
+      end
+
+      def perform_transformation(other_position)
+        new_offset = other_position.offset
+        if other_position.node == change.position.node
+          if (@direction == 'left' && (@position.offset <= new_offset))
+              new_offset -= @length
+          elsif (@direction == 'right' && (@position.offset <= new_offset))
+              new_offset -= @length
+          end
+        end
+        return Position.new(other_position.node, new_offset, @version)
       end
 
     end
