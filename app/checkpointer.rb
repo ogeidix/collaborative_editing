@@ -38,7 +38,7 @@ module CollaborativeEditing
 	   		end 	
 
 	   		def execute!
-                Rooms.rooms.each do |name, room|
+                Room.rooms.each do |name, room|
                     checksum = Digest::MD5.hexdigest(room.document.rexml_doc.to_s)
                     room.document.update_master checksum
                 end
