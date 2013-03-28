@@ -50,14 +50,14 @@ module CollaborativeEditing
 
       def perform_transformation(other_position)
         new_offset = other_position.offset
-        if other_position.node == change.position.node
+        if other_position.node == @position.node
           if (@direction == 'left' && (@position.offset <= new_offset))
               new_offset -= @length
           elsif (@direction == 'right' && (@position.offset <= new_offset))
               new_offset -= @length
           end
         end
-        return Position.new(other_position.node, new_offset, @version)
+        return Position.new(other_position.node, new_offset, @position.version+1)
       end
 
       def perform_change(document)
