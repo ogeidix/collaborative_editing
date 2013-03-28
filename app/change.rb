@@ -10,6 +10,7 @@
 ## Change#conflict               check the change agains ONE or AN ARRAY of lock positions.
 ##                               !! receive in input A BLOCK OF CODE to perform the check against one position
 ## Change#perform_transformation return a new Position object which is the input position after this change
+## Change#perform_change         actually change the content of the document which is exposed in the rexml_doc attribute
 ##
 
 module CollaborativeEditing
@@ -52,5 +53,10 @@ module CollaborativeEditing
         def perform_transformation(position)
             throw "to implement in subclass"
         end
+
+        def perform_change(document)
+            throw "to implement in subclass"
+        end
+
     end
 end

@@ -40,5 +40,19 @@ module CollaborativeEditing
             return Position.new(other_position.node, new_offset, @version+1)
         end
 
+        def perform_change(document)
+            parent_node = REXML::XPath.first document.rexml_doc, @position.parent_node
+            i = 0
+            n = 0
+            c = @position.child_number.to_i
+            while (i < c) do
+                i +=1 if(parent_node.children[n].class == REXML::Text)
+                n += 1
+            end
+            current_node = parent_node.children[n-1]            
+            prefix = current_node.value[0, @position.offset]
+            suffix = current_node.value[@position.offset, current_node.value.length]
+            current_node.value = prefix + @content + suffix
+        end
     end
 end

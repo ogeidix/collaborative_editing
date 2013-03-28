@@ -42,31 +42,7 @@ module CollaborativeEditing
         end
     
         def execute_change(this_change, toLog)
-            parent_node = REXML::XPath.first @rexml_doc, this_change.position.parent_node
-            i = 0
-            n = 0
-            c = this_change.position.child_number.to_i
-            while (i < c) do
-                i +=1 if(parent_node.children[n].class == REXML::Text)
-                n += 1
-            end
-
-            current_node = parent_node.children[n-1]            
-            prefix = current_node.value[0, this_change.position.offset]
-            suffix = current_node.value[this_change.position.offset, current_node.value.length]
-            interim = ""
-            
-            if this_change.is_a? Deletion
-                this_length = this_change.length
-                if this_change.direction.eql?('left')
-                    prefix  = current_node.value[0, this_change.position.offset - this_length]
-                else 
-                    suffix = current_node.value[this_change.position.offset + this_length, current_node.value.length]
-                end
-            elsif this_change.is_a? Insertion
-                interim = this_change.content.to_s 
-            end
-            current_node.value = prefix + interim + suffix
+            this_change.perform_change(self)
             
             # add this change to the history of the file
             @history[@version] = this_change
